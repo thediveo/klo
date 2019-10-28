@@ -31,6 +31,8 @@ import (
 type CustomColumnsPrinter struct {
 	// The individual columns with their headers and JSONPath expressions.
 	Columns []*Column
+	// Hide column headers
+	HideHeaders bool
 	// Padding between columns
 	Padding int
 }
@@ -135,12 +137,14 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 		defer tw.Flush()
 		w = tw
 	}
-	// Print column headers
-	headers := make([]string, len(p.Columns))
-	for idx, column := range p.Columns {
-		headers[idx] = column.Header
+	// Print column headers ... but only if not hidden...
+	if !p.HideHeaders {
+		headers := make([]string, len(p.Columns))
+		for idx, column := range p.Columns {
+			headers[idx] = column.Header
+		}
+		fmt.Fprintln(w, strings.Join(headers, "\t"))
 	}
-	fmt.Fprintln(w, strings.Join(headers, "\t"))
 	// Print value(s)...
 	if v != nil && reflect.TypeOf(v).Kind() == reflect.Slice {
 		sl := reflect.ValueOf(v)

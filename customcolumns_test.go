@@ -157,6 +157,11 @@ verylongfoo bar! <none>
 verylongfoo   bar!   <none>
 `))
 
+		p.(*CustomColumnsPrinter).HideHeaders = true
+		out.Reset()
+		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
+		Expect(out.String()).Should(Equal(`verylongfoo   bar!   <none>
+`))
 	})
 
 })
