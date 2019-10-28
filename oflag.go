@@ -22,10 +22,20 @@ import (
 )
 
 // PrinterFromFlag returns a suitable value printer according to the output
-// format specified as the flagvalue. If a widecolumns custom column spec was
-// given, then "-o wide" will be supported, otherwise a user trying to use the
-// wide output format will raise an error.
-func PrinterFromFlag(flagvalue string, widecolumnsspec string) (ValuePrinter, error) {
+// format specified as the flagvalue. The "-o" flag value is passed in via the
+// flagvalue paramter (without the "-o") and should denote one of the supported
+// output formats, such as "json", "yaml", "custom-columns", et cetera.
+//
+// If the output format flagvalue is zero (""), then the returned printer will
+// default to a custom columns printer using the also specified columnspec.
+//
+// If an additional widecolumns custom column spec was given (non-zero), then
+// "-o wide" will be supported, otherwise a user trying to use the wide output
+// format will raise an error.
+func PrinterFromFlag(flagvalue string, columnspec, widecolumnsspec string) (ValuePrinter, error) {
+	if flagvalue == "" {
+		flagvalue = "custom-columns=" + columnspec
+	}
 	// Do we support "-o wide"? Then map this to "-o customcolumns=..." for
 	// the specified wide columns spec.
 	if flagvalue == "wide" && widecolumnsspec != "" {
