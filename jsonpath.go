@@ -45,6 +45,8 @@ func NewJSONPathPrinter(expr string) (ValuePrinter, error) {
 	}, nil
 }
 
+// Fprint prints fields of a value in text format, where the values are selected
+// using JSONPath expressions.
 func (p *JSONPathPrinter) Fprint(w io.Writer, v interface{}) error {
 	if err := p.Expr.Execute(w, v); err != nil {
 		return fmt.Errorf(

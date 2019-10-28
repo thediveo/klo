@@ -139,4 +139,24 @@ verylongfoo bar! <none>
 		Expect(p.Fprint(&out, foo)).Should(HaveOccurred())
 	})
 
+	It("allows different column padding", func() {
+		p, err := NewCustomColumnsPrinterFromSpec("FOO:Foo,BAR:Bar,BAZ:blafasel")
+		Expect(err).ShouldNot(HaveOccurred())
+		p.(*CustomColumnsPrinter).Padding = 3
+
+		var out bytes.Buffer
+		type Foo struct {
+			Foo string
+			Bar string
+		}
+		foo := []Foo{
+			Foo{Foo: "verylongfoo", Bar: "bar!"},
+		}
+		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
+		Expect(out.String()).Should(Equal(`FOO           BAR    BAZ
+verylongfoo   bar!   <none>
+`))
+
+	})
+
 })

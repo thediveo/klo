@@ -27,8 +27,12 @@ import (
 	"k8s.io/client-go/util/jsonpath"
 )
 
+// CustomColumnsPrinter prints neatly formatted tables with custom columns.
 type CustomColumnsPrinter struct {
+	// The individual columns with their headers and JSONPath expressions.
 	Columns []*Column
+	// Padding between columns
+	Padding int
 }
 
 // Column stores the header text and the JSONPath for fetching column values.
@@ -40,10 +44,11 @@ type Column struct {
 	Template *jsonpath.JSONPath // Compiled JSONPath expression.
 }
 
-// NewCustomColumnsPrinterFromSpec returns a new custom columns printer for
-// the given specification. This specification is in form of a string
-// consisting of a series of <column-header-name>:<json-path-expr> elements,
-// separated by ",".
+// NewCustomColumnsPrinterFromSpec returns a new custom columns printer for the
+// given specification. This specification is in form of a string consisting of
+// a series of <column-header-name>:<json-path-expr> elements, separated by ",".
+// The default padding between columns is set to 0, but can be changed later
+// using the Padding field of the printer returned.
 func NewCustomColumnsPrinterFromSpec(spec string) (ValuePrinter, error) {
 	if spec == "" {
 		return nil, errors.New("no custom columns given")
@@ -51,7 +56,9 @@ func NewCustomColumnsPrinterFromSpec(spec string) (ValuePrinter, error) {
 	// Split the columns specification into individual columns, and then get
 	// the column header text as well as the JSONPath expression for each
 	// column.
-	ccp := &CustomColumnsPrinter{}
+	ccp := &CustomColumnsPrinter{
+		Padding: 1,
+	}
 	templcols := strings.Split(spec, ",")
 	columns := make([]*Column, len(templcols))
 	for idx, part := range templcols {
@@ -94,7 +101,9 @@ func NewCustomColumnsPrinterFromTemplate(tr io.Reader) (ValuePrinter, error) {
 	if len(columnheaders) == 0 {
 		return nil, fmt.Errorf("no columns specified; %s", expectedformat)
 	}
-	ccp := &CustomColumnsPrinter{}
+	ccp := &CustomColumnsPrinter{
+		Padding: 1,
+	}
 	columns := make([]*Column, len(columnheaders))
 	for idx := range columnheaders {
 		cc := &Column{
@@ -122,7 +131,7 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 	// a tabwriter, then it is her/his responsibility to flush the tabwriter
 	// table when necessary.
 	if _, ok := w.(*tabwriter.Writer); !ok {
-		tw := tabwriter.NewWriter(w, 5, 8, 1, ' ', 0)
+		tw := tabwriter.NewWriter(w, 5, 8, p.Padding, ' ', 0)
 		defer tw.Flush()
 		w = tw
 	}

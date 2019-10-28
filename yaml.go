@@ -28,6 +28,7 @@ func NewYAMLPrinter() (ValuePrinter, error) {
 	return &YAMLPrinter{}, nil
 }
 
+// Fprint prints a value in YAML format.
 func (p *YAMLPrinter) Fprint(w io.Writer, v interface{}) error {
 	txt, err := yaml.Marshal(v)
 	if err != nil {

@@ -42,7 +42,7 @@ type myobj struct {
 
 func main() {
     // ...
-    prn, err := klo.PrinterFromFlag("custom-columns=NAME:{.Name},FOO:{.Foo},BAR:{.Bar}")
+    prn, err := klo.PrinterFromFlag("", "NAME:{.Name},FOO:{.Foo},BAR:{.Bar}", "")
     if err != nil {
         panic(err)
     }
