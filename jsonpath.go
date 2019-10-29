@@ -24,7 +24,7 @@ import (
 // JSONPathPrinter prints values in JSON format.
 type JSONPathPrinter struct {
 	Expr *jsonpath.JSONPath // Compiled JSONPath expression.
-	raw  string             // Original JSONPath expression
+	raw  string             // Original JSONPath expression, to ease debugging.
 }
 
 // NewJSONPathPrinter returns a printer for outputting the values that were

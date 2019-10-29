@@ -8,4 +8,5 @@ require (
 	github.com/spf13/pflag v1.0.5
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/yaml v1.1.0
+	vbom.ml/util v0.0.0-20180919145318-efcd4e0f9787
 )
