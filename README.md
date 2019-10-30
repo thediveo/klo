@@ -1,5 +1,7 @@
 # klo
 
+[![GoDoc](https://godoc.org/github.com/TheDiveO/klo?status.svg)](http://godoc.org/github.com/TheDiveO/klo)
+
 `klo` is a Go package for `kubectl`-like output of Go values (such as structs,
 maps, et cetera) in several output formats. You might want to use this package
 in your CLI tools to easily offer `kubectl`-like output formatting to your
