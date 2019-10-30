@@ -124,6 +124,17 @@ foo  666
 
 		out.Reset()
 		Expect(sp.Fprint(&out, &table)).ShouldNot(HaveOccurred())
+
+		table[2].B = 42
+		sp, err = NewSortingPrinter("{.B}{'/'}{.A}", ccp)
+		Expect(err).ShouldNot(HaveOccurred())
+		out.Reset()
+		Expect(sp.Fprint(&out, &table)).ShouldNot(HaveOccurred())
+		Expect(out.String()).Should(Equal(`A    B
+bar  42
+foo  42
+aaa  420
+`))
 	})
 
 })

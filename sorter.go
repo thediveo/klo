@@ -77,7 +77,7 @@ func (sp *SortingPrinter) Fprint(w io.Writer, v interface{}) error {
 		} else if len(key) == 1 && len(key[0]) == 1 {
 			index.keys[idx] = key[0][0]
 		} else {
-			index.keys[idx] = reflect.ValueOf(key)
+			index.keys[idx] = reflect.ValueOf(stringFromJSONExprResult(key, ""))
 		}
 	}
 	sort.Sort(index)

@@ -168,15 +168,7 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 				if len(res) == 0 || len(res[0]) == 0 {
 					rowvals[cidx] = "<none>"
 				} else {
-					cellvals := []string{}
-					for arridx := range res {
-						for validx := range res[arridx] {
-							cellvals = append(
-								cellvals,
-								fmt.Sprintf("%v", res[arridx][validx].Interface()))
-						}
-					}
-					rowvals[cidx] = strings.Join(cellvals, ",")
+					rowvals[cidx] = stringFromJSONExprResult(res, ", ")
 				}
 			}
 			// Finish this column by printing all columns' values, separated
@@ -185,6 +177,19 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 		}
 	}
 	return nil
+}
+
+// Stringifies a JSONPath expression result.
+func stringFromJSONExprResult(res [][]reflect.Value, sep string) string {
+	vals := []string{}
+	for arridx := range res {
+		for validx := range res[arridx] {
+			vals = append(
+				vals,
+				fmt.Sprintf("%v", res[arridx][validx].Interface()))
+		}
+	}
+	return strings.Join(vals, sep)
 }
 
 // See: github.com/kubernetes/pkg/kubectl/cmd/get/customcolumn.go; please note
