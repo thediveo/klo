@@ -25,6 +25,13 @@ import (
 
 var _ = Describe("-o output options", func() {
 
+	It("doesn't accept botched expressions", func() {
+		_, err := NewSortingPrinter("{.A", nil)
+		Expect(err).Should(HaveOccurred())
+		_, err = NewSortingPrinter("{.A}", nil)
+		Expect(err).Should(HaveOccurred())
+	})
+
 	It("compares i<j reflection values", func() {
 		type test struct {
 			i, j    reflect.Value
@@ -114,6 +121,9 @@ bar  42
 aaa  420
 foo  666
 `))
+
+		out.Reset()
+		Expect(sp.Fprint(&out, &table)).ShouldNot(HaveOccurred())
 	})
 
 })

@@ -15,6 +15,7 @@
 package klo
 
 import (
+	"errors"
 	"io"
 	"reflect"
 	"sort"
@@ -36,6 +37,9 @@ func NewSortingPrinter(expr string, p ValuePrinter) (ValuePrinter, error) {
 	jp := jsonpath.New("sort")
 	if err := jp.Parse(expr); err != nil {
 		return nil, err
+	}
+	if p == nil {
+		return nil, errors.New("nil ValuePrint to chain (hint: we cannot)")
 	}
 	return &SortingPrinter{
 		ChainedPrinter: p,
