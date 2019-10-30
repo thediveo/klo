@@ -17,6 +17,7 @@ package klo
 import (
 	"io"
 	"reflect"
+	"sort"
 
 	"k8s.io/client-go/util/jsonpath"
 	"vbom.ml/util/sortorder"
@@ -30,7 +31,7 @@ type SortingPrinter struct {
 	raw            string             // Original JSONPath expression, to ease debugging.
 }
 
-// NewYAMLPrinter returns a printer for outputting values in YAML format.
+// NewSortingPrinter returns a printer for outputting values in YAML format.
 func NewSortingPrinter(expr string, p ValuePrinter) (ValuePrinter, error) {
 	jp := jsonpath.New("sort")
 	if err := jp.Parse(expr); err != nil {
@@ -45,40 +46,79 @@ func NewSortingPrinter(expr string, p ValuePrinter) (ValuePrinter, error) {
 
 // Fprint first sorts values according to a JSONPath expression used for
 // sorting, then chains to the next ValuePrinter for printing.
-func (p *SortingPrinter) Fprint(w io.Writer, v interface{}) error {
-	return p.ChainedPrinter.Fprint(w, v)
+func (sp *SortingPrinter) Fprint(w io.Writer, v interface{}) error {
+	val := reflect.ValueOf(v)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	if val.Kind() != reflect.Slice {
+		return sp.ChainedPrinter.Fprint(w, val.Interface())
+	}
+	//
+	slicelen := val.Len()
+	index := keyedItems{
+		keys:  make([]reflect.Value, slicelen),
+		items: make([]reflect.Value, slicelen),
+	}
+	for idx := 0; idx < slicelen; idx++ {
+		index.items[idx] = val.Index(idx)
+		key, err := sp.SortExpr.FindResults(index.items[idx].Interface())
+		if err != nil {
+			return err
+		}
+		// Depending on the JSONPath expression, the key for this item (column)
+		// might consist of multiple values, or even none at all.
+		if len(key) == 0 || len(key[0]) == 0 {
+			index.keys[idx] = reflect.ValueOf("<none>")
+		} else if len(key) == 1 && len(key[0]) == 1 {
+			index.keys[idx] = key[0][0]
+		} else {
+			index.keys[idx] = reflect.ValueOf(key)
+		}
+	}
+	sort.Sort(index)
+	// That's it: hand over the sorted items to the chained printer so it can
+	// carry out its part of the job.
+	return sp.ChainedPrinter.Fprint(w, index.items)
 }
 
+//
 type keyedItems struct {
-	keys  []string      // results of evaluating JSONPath expressions.
-	items reflect.Value // references the items slice to be sorted.
+	keys  []reflect.Value // results of evaluating JSONPath expressions.
+	items []reflect.Value // references the items slice to be sorted.
 }
 
 // Returns number of items (interface sort.Interface).
 func (ki keyedItems) Len() int { return len(ki.keys) }
 
 // Compares two items by their keys (interface sort.Interface).
-func (ki keyedItems) Less(i, j int) bool { return ki.keys[i] < ki.keys[j] }
+func (ki keyedItems) Less(i, j int) bool { return reflectedLess(ki.keys[i], ki.keys[j]) }
 
-// Swaps two child nodes (interface sort.Interface). Swapping the child references
-// that are in the form of reflect.Values is unfortunately slightly involved, as
-// a simple swap without an intermediate temporary would fail.
+// Swaps two child nodes (interface sort.Interface). Swapping the item
+// references that are in the form of reflect.Values is unfortunately slightly
+// involved, as a simple swap without an intermediate temporary would fail.
 func (ki keyedItems) Swap(i, j int) {
-	l.labels[i], l.labels[j] = l.labels[j], l.labels[i]
+	ki.keys[i], ki.keys[j] = ki.keys[j], ki.keys[i]
 	// We cannot simply swap two elements in a slice if they are more
 	// intricate types, such as strings, interfaces, maps, et cetera, as
 	// opposed to ints. See also: https://github.com/golang/go/issues/3126
 	// Instead, we need to dance around and sacrifice the Go(ds) of
 	// reflection.
-	temp := reflect.New(l.nodes.Index(i).Type()).Elem()
-	temp.Set(l.nodes.Index(i))
-	l.nodes.Index(i).Set(l.nodes.Index(j))
-	l.nodes.Index(j).Set(temp)
+	temp := reflect.New(ki.items[i].Type()).Elem()
+	temp.Set(ki.items[i])
+	ki.items[i].Set(ki.items[j])
+	ki.items[j].Set(temp)
 }
 
 // reflectedLess compares two values and returns true if i<j. In case of
 // incompatible values, it resorts to comparing the string representations of
-// the values instead.
+// the values instead. Since we have no idea as how to define a sorting order on
+// arrays, slices, structs, et cetera, we just consider them incompatible too,
+// and resort to sorting their string representation, whatever sense that might
+// make.
+//
+// Oh, and in contrast to kubectl's isLess() version, we don't panic, because
+// that's really not nice in the face of CLI users.
 func reflectedLess(i, j reflect.Value) bool {
 	// First, follow pointers, so we don't need to care about them later...
 	for i.Kind() == reflect.Ptr {

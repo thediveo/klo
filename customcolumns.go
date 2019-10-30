@@ -152,6 +152,9 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 			// Work on a single row and now find the results of all columns
 			// for the current object...
 			rowval := sl.Index(idx).Interface()
+			if rv, ok := rowval.(reflect.Value); ok {
+				rowval = rv.Interface()
+			}
 			rowvals := make([]string, len(p.Columns))
 			for cidx, col := range p.Columns {
 				// Calculate the result of a this column for the current row.
