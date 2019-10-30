@@ -17,6 +17,7 @@ The following output formats are supported:
 
 - ASCII columns, which optionally can be customized (`-o custom-columns=` and
   `-o custom-columns-file=`).
+  - optional sorting by specific column(s) using JSONPath expressions.
 - JSON and JSONPath-customized (`-o json`, `-o jsonpath=`, and `-o
   jsonpath-file=`).
 - YAML (`-o yaml`).
@@ -27,6 +28,9 @@ The following output formats are supported:
 > itself and then use the existing `klo` package features.
 
 ## Usage
+
+The following code example prints a table with multiple columns, and the rows
+sorted by the NAME column.
 
 ```go
 import (
@@ -41,18 +45,37 @@ type myobj struct {
 }
 
 func main() {
-    // ...
-    prn, err := klo.PrinterFromFlag("", "NAME:{.Name},FOO:{.Foo},BAR:{.Bar}", "")
-    if err != nil {
-        panic(err)
-    }
-    // ...
-    list := []myobj{
-        myobj{Name:"One", Foo:"Foo"},
-        myobj{Name:"Two", Foo:"Fou", Bar:"Bar"},
-    }
-    prn.Fprint(os.stdout, list)
-}
+	type myobj struct {
+		Name string
+		Foo  int
+		Bar  string
+	}
+	// A slice of objects we want to print as a table with custom columns.
+	list := []myobj{
+		myobj{Name: "One", Foo: 42},
+		myobj{Name: "Two", Foo: 666, Bar: "Bar"},
+		myobj{Name: "Another Two", Foo: 123, Bar: "Bar"},
+	}
+
+	// Create a table printer with custom columns, to be filled from fields
+	// of the objects (namely, Name, Foo, and Bar fields).
+	prn, err := klo.PrinterFromFlag("", "NAME:{.Name},FOO:{.Foo},BAR:{.Bar}", "")
+	if err != nil {
+		panic(err)
+	}
+	// Use a table sorter and tell it to sort by the Name field of our column objects.
+	table, err := klo.NewSortingPrinter("{.Name}", prn)
+	table.Fprint(os.Stdout, list)
+
+```
+
+This will output:
+
+```
+NAME        FOO  BAR
+Another Two 123  Bar
+One         42
+Two         666  Bar
 ```
 
 ## Copyright and License
