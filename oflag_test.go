@@ -90,20 +90,20 @@ Foo! <none>
 		_, err = PrinterFromFlag("jsonpath-file", "", "")
 		Expect(err).Should(HaveOccurred())
 
-		_, err = PrinterFromFlag("jsonpath-file=./test/missing.jsonpath", "", "")
+		_, err = PrinterFromFlag("jsonpath-file=./testdata/missing.jsonpath", "", "")
 		Expect(err).Should(HaveOccurred())
 
 		out.Reset()
-		_, err = PrinterFromFlag("jsonpath-file=./test/empty.jsonpath", "", "")
+		_, err = PrinterFromFlag("jsonpath-file=./testdata/empty.jsonpath", "", "")
 		Expect(err).Should(HaveOccurred())
 
 		out.Reset()
-		p, err = PrinterFromFlag("jsonpath-file=./test/unknown.jsonpath", "", "")
+		p, err = PrinterFromFlag("jsonpath-file=./testdata/unknown.jsonpath", "", "")
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(p.Fprint(&out, []Foo{foo})).Should(HaveOccurred())
 
 		out.Reset()
-		p, err = PrinterFromFlag("jsonpath-file=./test/valid.jsonpath", "", "")
+		p, err = PrinterFromFlag("jsonpath-file=./testdata/valid.jsonpath", "", "")
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(p.Fprint(&out, []Foo{foo})).ShouldNot(HaveOccurred())
 		Expect(out.String()).Should(Equal(`Foo!`))
