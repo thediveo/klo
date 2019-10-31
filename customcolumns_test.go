@@ -40,16 +40,17 @@ var _ = Describe("custom columns printer", func() {
 		}) //nolint:composites
 	})
 
+	It("rejects bad column specs", func() {
+		t.PassFail(t.PASSFAILS{
+			t.FAIL{"empty spec", t.Err(NewCustomColumnsPrinterFromSpec(""))},
+			t.FAIL{"missing column expressions",
+				t.Err(NewCustomColumnsPrinterFromSpec("FOO,BAR"))},
+			t.FAIL{"malformed column expression",
+				t.Err(NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:{bar"))},
+		}) //nolint:composites
+	})
+
 	It("creates custom column printer from specs", func() {
-		_, err := NewCustomColumnsPrinterFromSpec("")
-		Expect(err).Should(HaveOccurred())
-
-		_, err = NewCustomColumnsPrinterFromSpec("FOO,BAR")
-		Expect(err).Should(HaveOccurred())
-
-		_, err = NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:{bar")
-		Expect(err).Should(HaveOccurred())
-
 		p, err := NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:.bar")
 		Expect(err).ShouldNot(HaveOccurred())
 		ccp := p.(*CustomColumnsPrinter)
@@ -86,36 +87,34 @@ verylongfoo bar! <none>
 		Expect(p.Fprint(&out, foo)).Should(HaveOccurred())
 	})
 
-	It("creates custom column printer from template streams", func() {
-		_, err := NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-			""))
-		Expect(err).Should(HaveOccurred())
-
-		_, err = NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-			`   
+	It("rejects creating custom column printers from invalid template streams", func() {
+		t.PassFail(t.PASSFAILS{
+			t.FAIL{"empty template stream",
+				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
+					"")))},
+			t.FAIL{"2 empty lines",
+				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
+					`   
    
-`))
-		Expect(err).Should(HaveOccurred())
-
-		_, err = NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-			`FOO BAR
-`))
-		Expect(err).Should(HaveOccurred())
-
-		_, err = NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-			`FOO BAR
+`)))},
+			t.FAIL{"only header line",
+				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
+					`FOO BAR
+`)))},
+			t.FAIL{"inconsistent # of columns",
+				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
+					`FOO BAR
 foo bar baz
-`))
-		Expect(err).Should(HaveOccurred())
+`)))},
+			t.FAIL{"malformed column JSONPath expression",
+				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
+					`FOO BAR BAZ
+Foo Bar {Baz
+`)))},
+		})
 	})
 
 	It("prints neat tables using templates", func() {
-		_, err := NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-			`FOO BAR BAZ
-Foo Bar {Baz
-`))
-		Expect(err).Should(HaveOccurred())
-
 		p, err := NewCustomColumnsPrinterFromTemplate(strings.NewReader(
 			`FOO BAR BAZ
 Foo Bar Baz
