@@ -15,8 +15,6 @@
 package klo
 
 import (
-	"bytes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -24,18 +22,11 @@ import (
 var _ = Describe("JSON printer", func() {
 
 	It("prints JSON", func() {
-		type foo struct {
-			Foo string
-		}
-		f := foo{Foo: "bar"}
-		var out bytes.Buffer
-		p, err := NewJSONPrinter()
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, f)).Should(Succeed())
-		Expect(out.String()).Should(Equal(`{
+		p := GoodPrinter(NewJSONPrinter())
+		PrinterPass(p, struct{ Foo string }{Foo: "bar"}, `{
     "Foo": "bar"
 }
-`))
+`)
 	})
 
 	It("handles JSON failures", func() {
@@ -44,7 +35,7 @@ var _ = Describe("JSON printer", func() {
 		// handle it in the printer ... luckily,
 		// https://stackoverflow.com/a/33964549 has the answer as to how make
 		// it fail.
-		p, _ := NewJSONPrinter()
+		p := GoodPrinter(NewJSONPrinter())
 		Expect(p.Fprint(nil, make(chan struct{}))).ShouldNot(Succeed())
 	})
 

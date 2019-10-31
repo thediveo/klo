@@ -15,25 +15,15 @@
 package klo
 
 import (
-	"bytes"
-
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("YAML printer", func() {
 
 	It("prints YAML", func() {
-		type foo struct {
-			Foo string
-		}
-		f := foo{Foo: "bar"}
-		var out bytes.Buffer
-		p, err := NewYAMLPrinter()
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, f)).Should(Succeed())
-		Expect(out.String()).Should(Equal(`Foo: bar
-`))
+		p := GoodPrinter(NewYAMLPrinter())
+		PrinterPass(p, struct{ Foo string }{Foo: "bar"}, `Foo: bar
+`)
 	})
 
 	It("handles YAML failures", func() {
@@ -43,8 +33,8 @@ var _ = Describe("YAML printer", func() {
 		// https://stackoverflow.com/a/33964549 has the answer as to how make
 		// JSON marshalling fail, which in turn makes the YAML marshaller fail
 		// which we use, kind of a chain reaction...
-		p, _ := NewYAMLPrinter()
-		Expect(p.Fprint(nil, make(chan struct{}))).ShouldNot(Succeed())
+		p := GoodPrinter(NewYAMLPrinter())
+		PrinterFail(p, make(chan struct{}))
 	})
 
 })

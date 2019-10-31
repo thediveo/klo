@@ -15,7 +15,6 @@
 package klo
 
 import (
-	"bytes"
 	"strings"
 
 	"k8s.io/client-go/util/jsonpath"
@@ -27,30 +26,16 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 )
 
-// PrinterPass checks that a ValuePrinter correctly renders the expected
-// output.
-func PrinterPass(p ValuePrinter, v interface{}, expected string) {
-	var out bytes.Buffer
-	ExpectWithOffset(1, p.Fprint(&out, v)).ShouldNot(HaveOccurred())
-	ExpectWithOffset(1, out.String()).Should(Equal(expected))
-}
-
-// PrinterFail expects the ValuePrinter to correctly fail.
-func PrinterFail(p ValuePrinter, v interface{}) {
-	var out bytes.Buffer
-	ExpectWithOffset(1, p.Fprint(&out, v)).Should(HaveOccurred())
-}
-
-type Foo struct {
-	Foo string
-	Bar string
-}
-
-var foo = []Foo{
-	Foo{Foo: "verylongfoo", Bar: "bar!"},
-}
-
 var _ = Describe("custom columns printer", func() {
+
+	type tfoo struct {
+		Foo string
+		Bar string
+	}
+
+	var foo = []tfoo{
+		tfoo{Foo: "verylongfoo", Bar: "bar!"},
+	}
 
 	It("parses column spec expressions", func() {
 		var c Column
@@ -76,8 +61,7 @@ var _ = Describe("custom columns printer", func() {
 	})
 
 	It("creates custom column printer from spec string", func() {
-		p, err := NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:.bar")
-		Expect(err).ShouldNot(HaveOccurred())
+		p := GoodPrinter(NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:.bar"))
 		ccp := p.(*CustomColumnsPrinter)
 		Expect(ccp.Columns).Should(HaveLen(2))
 		Expect(*ccp.Columns[0]).Should(MatchFields(IgnoreExtras, Fields{
@@ -91,8 +75,7 @@ var _ = Describe("custom columns printer", func() {
 	})
 
 	It("prints neat tables using custom column specs", func() {
-		p, err := NewCustomColumnsPrinterFromSpec("FOO:Foo,BAR:Bar,BAZ:blafasel")
-		Expect(err).ShouldNot(HaveOccurred())
+		p := GoodPrinter(NewCustomColumnsPrinterFromSpec("FOO:Foo,BAR:Bar,BAZ:blafasel"))
 		PrinterPass(p, nil, `FOO  BAR  BAZ
 `)
 		PrinterPass(p, foo, `FOO         BAR  BAZ
@@ -132,11 +115,10 @@ Foo Bar {Baz
 	})
 
 	It("prints neat tables using templates", func() {
-		p, err := NewCustomColumnsPrinterFromTemplate(strings.NewReader(
+		p := GoodPrinter(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
 			`FOO BAR BAZ
 Foo Bar Baz
-`))
-		Expect(err).ShouldNot(HaveOccurred())
+`)))
 		PrinterPass(p, foo, `FOO         BAR  BAZ
 verylongfoo bar! <none>
 `)
@@ -147,10 +129,8 @@ verylongfoo bar! <none>
 	})
 
 	It("allows different column padding", func() {
-		p, err := NewCustomColumnsPrinterFromSpec("FOO:Foo,BAR:Bar,BAZ:blafasel")
-		Expect(err).ShouldNot(HaveOccurred())
+		p := GoodPrinter(NewCustomColumnsPrinterFromSpec("FOO:Foo,BAR:Bar,BAZ:blafasel"))
 		p.(*CustomColumnsPrinter).Padding = 3
-
 		PrinterPass(p, foo, `FOO           BAR    BAZ
 verylongfoo   bar!   <none>
 `)

@@ -15,98 +15,67 @@
 package klo
 
 import (
-	"bytes"
-
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("-o output options", func() {
 
-	It("handles -o", func() {
-		_, err := PrinterFromFlag("unknown", "", "widespec")
-		Expect(err).Should(HaveOccurred())
+	type Foo struct{ Foo string }
+	foo := Foo{Foo: "Foo!"}
 
-		_, err = PrinterFromFlag("", "colspec", "widespec")
-		Expect(err).Should(HaveOccurred())
+	It("unknown -o", func() {
+		BadPrinter(PrinterFromFlag("unknown", "", "widespec"))
+	})
 
-		type Foo struct {
-			Foo string
-		}
-		foo := Foo{Foo: "Foo!"}
-		var out bytes.Buffer
+	It("default -o", func() {
+		BadPrinter(PrinterFromFlag("", "colspec", "widespec"))
+		PrinterPass(GoodPrinter(PrinterFromFlag("", "FOO:Foo,BAR:bar", "")), []Foo{foo},
+			`FOO  BAR
+Foo! <none>
+`)
+	})
 
-		p, err := PrinterFromFlag("json", "", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`{
+	It("-o wide", func() {
+		PrinterPass(GoodPrinter(PrinterFromFlag("wide", "", "FOO:Foo,BAR:bar")), []Foo{foo},
+			`FOO  BAR
+Foo! <none>
+`)
+	})
+
+	It("-o custom-columns", func() {
+		BadPrinter(PrinterFromFlag("custom-columns", "", ""))
+		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns=FOO:Foo,BAR:bar", "", "")), []Foo{foo},
+			`FOO  BAR
+Foo! <none>
+`)
+	})
+
+	It("-o json", func() {
+		PrinterPass(GoodPrinter(PrinterFromFlag("json", "", "")), foo, `{
     "Foo": "Foo!"
 }
-`))
+`)
+	})
 
-		out.Reset()
-		p, err = PrinterFromFlag("yaml", "", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`Foo: Foo!
-`))
+	It("-o jsonpath", func() {
+		BadPrinter(PrinterFromFlag("jsonpath", "", ""))
+		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath={[*].Foo}", "", "")),
+			[]Foo{foo},
+			`Foo!`)
+	})
 
-		out.Reset()
-		p, err = PrinterFromFlag("", "FOO:Foo,BAR:bar", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, []Foo{foo})).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO  BAR
-Foo! <none>
-`))
+	It("-o jsonpath-file", func() {
+		BadPrinter(PrinterFromFlag("jsonpath-file", "", ""))
+		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/missing.jsonpath", "", ""))
+		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/empty.jsonpath", "", ""))
+		PrinterFail(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/unknown.jsonpath", "", "")), []Foo{foo})
+		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/valid.jsonpath", "", "")), []Foo{foo}, `Foo!`)
+	})
 
-		out.Reset()
-		p, err = PrinterFromFlag("wide", "", "FOO:Foo,BAR:bar")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, []Foo{foo})).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO  BAR
-Foo! <none>
-`))
-
-		_, err = PrinterFromFlag("custom-columns", "", "")
-		Expect(err).Should(HaveOccurred())
-
-		out.Reset()
-		p, err = PrinterFromFlag("custom-columns=FOO:Foo,BAR:bar", "", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, []Foo{foo})).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO  BAR
-Foo! <none>
-`))
-
-		_, err = PrinterFromFlag("jsonpath", "", "")
-		Expect(err).Should(HaveOccurred())
-
-		out.Reset()
-		p, err = PrinterFromFlag("jsonpath={[*].Foo}", "", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, []Foo{foo})).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`Foo!`))
-
-		_, err = PrinterFromFlag("jsonpath-file", "", "")
-		Expect(err).Should(HaveOccurred())
-
-		_, err = PrinterFromFlag("jsonpath-file=./testdata/missing.jsonpath", "", "")
-		Expect(err).Should(HaveOccurred())
-
-		out.Reset()
-		_, err = PrinterFromFlag("jsonpath-file=./testdata/empty.jsonpath", "", "")
-		Expect(err).Should(HaveOccurred())
-
-		out.Reset()
-		p, err = PrinterFromFlag("jsonpath-file=./testdata/unknown.jsonpath", "", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, []Foo{foo})).Should(HaveOccurred())
-
-		out.Reset()
-		p, err = PrinterFromFlag("jsonpath-file=./testdata/valid.jsonpath", "", "")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, []Foo{foo})).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`Foo!`))
+	It("-o yaml", func() {
+		PrinterPass(GoodPrinter(PrinterFromFlag("yaml", "", "")), foo,
+			`Foo: Foo!
+`)
 	})
 
 })

@@ -15,32 +15,21 @@
 package klo
 
 import (
-	"bytes"
-
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("JSONPath printer", func() {
 
 	It("prints JSON using JSONPath", func() {
-		_, err := NewJSONPathPrinter("{.Foo")
-		Expect(err).Should(HaveOccurred())
+		BadPrinter(NewJSONPathPrinter("{.Foo"))
 
-		type foo struct {
-			Foo string
-		}
-		f := foo{Foo: "bar"}
-		var out bytes.Buffer
-		p, err := NewJSONPathPrinter("{.Foo}")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, f)).Should(Succeed())
-		Expect(out.String()).Should(Equal(`bar`))
+		f := struct{ Foo string }{Foo: "bar"}
 
-		out.Reset()
-		p, err = NewJSONPathPrinter("{.Nothing}")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(p.Fprint(&out, f)).ShouldNot(Succeed())
+		p := GoodPrinter(NewJSONPathPrinter("{.Foo}"))
+		PrinterPass(p, f, `bar`)
+
+		p = GoodPrinter(NewJSONPathPrinter("{.Nothing}"))
+		PrinterFail(p, f)
 	})
 
 })
