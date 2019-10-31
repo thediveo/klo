@@ -25,7 +25,7 @@ import (
 
 var _ = Describe("-o output options", func() {
 
-	It("doesn't accept botched expressions", func() {
+	It("doesn't accept botched JSONPath expressions for sorting", func() {
 		_, err := NewSortingPrinter("{.A", nil)
 		Expect(err).Should(HaveOccurred())
 		_, err = NewSortingPrinter("{.A}", nil)
@@ -83,8 +83,9 @@ var _ = Describe("-o output options", func() {
 		for _, t := range tests {
 			Expect(reflectedLess(t.i, t.j)).Should(
 				Equal(t.outcome),
-				fmt.Sprintf("%s(%+v)!<%s(%+v)",
-					reflect.TypeOf(t.i.Interface()).String(), t.i, reflect.TypeOf(t.j.Interface()).String(), t.j))
+				fmt.Sprintf("comparing %s(%+v)<%s(%+v) failed",
+					reflect.TypeOf(t.i.Interface()).String(), t.i,
+					reflect.TypeOf(t.j.Interface()).String(), t.j))
 		}
 	})
 

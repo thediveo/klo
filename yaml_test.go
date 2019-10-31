@@ -42,7 +42,7 @@ var _ = Describe("YAML printer", func() {
 		// handle it in the printer ... luckily,
 		// https://stackoverflow.com/a/33964549 has the answer as to how make
 		// JSON marshalling fail, which in turn makes the YAML marshaller fail
-		// which we use.
+		// which we use, kind of a chain reaction...
 		p, _ := NewYAMLPrinter()
 		Expect(p.Fprint(nil, make(chan struct{}))).ShouldNot(Succeed())
 	})

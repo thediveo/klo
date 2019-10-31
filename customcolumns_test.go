@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"strings"
 
+	t "github.com/thediveo/klo/testutil"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/client-go/util/jsonpath"
@@ -27,13 +29,15 @@ var _ = Describe("custom columns printer", func() {
 
 	It("parses column spec expressions", func() {
 		var c Column
-		Expect(c.SetExpression("")).Should(Succeed())
-		Expect(c.SetExpression("{foo")).ShouldNot(Succeed())
-		Expect(c.SetExpression("foo[0")).ShouldNot(Succeed())
-		Expect(c.SetExpression("foo")).Should(Succeed())
-		Expect(c.SetExpression(".foo")).Should(Succeed())
-		Expect(c.SetExpression("{foo}")).Should(Succeed())
-		Expect(c.SetExpression("{.foo}")).Should(Succeed())
+		t.PassFail(t.PASSFAILS{
+			t.PASS{"empty spec", c.SetExpression("")},
+			t.PASS{"relaxed spec", c.SetExpression("foo")},
+			t.PASS{"relaxed . spec", c.SetExpression(".foo")},
+			t.PASS{"relaxed {} spec", c.SetExpression("{foo}")},
+			t.PASS{"correct spec", c.SetExpression("{.foo}")},
+			t.FAIL{"incomplete { spec", c.SetExpression("{foo")},
+			t.FAIL{"incomplete [ spec", c.SetExpression("foo[0")},
+		}) //nolint:composites
 	})
 
 	It("creates custom column printer from specs", func() {
