@@ -18,12 +18,37 @@ import (
 	"bytes"
 	"strings"
 
+	"k8s.io/client-go/util/jsonpath"
+
 	t "github.com/thediveo/klo/testutil"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/client-go/util/jsonpath"
+	. "github.com/onsi/gomega/gstruct"
 )
+
+// PrinterPass checks that a ValuePrinter correctly renders the expected
+// output.
+func PrinterPass(p ValuePrinter, v interface{}, expected string) {
+	var out bytes.Buffer
+	ExpectWithOffset(1, p.Fprint(&out, v)).ShouldNot(HaveOccurred())
+	ExpectWithOffset(1, out.String()).Should(Equal(expected))
+}
+
+// PrinterFail expects the ValuePrinter to correctly fail.
+func PrinterFail(p ValuePrinter, v interface{}) {
+	var out bytes.Buffer
+	ExpectWithOffset(1, p.Fprint(&out, v)).Should(HaveOccurred())
+}
+
+type Foo struct {
+	Foo string
+	Bar string
+}
+
+var foo = []Foo{
+	Foo{Foo: "verylongfoo", Bar: "bar!"},
+}
 
 var _ = Describe("custom columns printer", func() {
 
@@ -50,41 +75,33 @@ var _ = Describe("custom columns printer", func() {
 		}) //nolint:composites
 	})
 
-	It("creates custom column printer from specs", func() {
+	It("creates custom column printer from spec string", func() {
 		p, err := NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:.bar")
 		Expect(err).ShouldNot(HaveOccurred())
 		ccp := p.(*CustomColumnsPrinter)
 		Expect(ccp.Columns).Should(HaveLen(2))
+		Expect(*ccp.Columns[0]).Should(MatchFields(IgnoreExtras, Fields{
+			"Header": Equal("FOO"),
+			"Raw":    Equal("foo"),
+		}))
+		Expect(*ccp.Columns[1]).Should(MatchFields(IgnoreExtras, Fields{
+			"Header": Equal("BAR"),
+			"Raw":    Equal(".bar"),
+		}))
 	})
 
 	It("prints neat tables using custom column specs", func() {
 		p, err := NewCustomColumnsPrinterFromSpec("FOO:Foo,BAR:Bar,BAZ:blafasel")
 		Expect(err).ShouldNot(HaveOccurred())
-
-		var out bytes.Buffer
-		Expect(p.Fprint(&out, nil)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO  BAR  BAZ
-`))
-
-		type Foo struct {
-			Foo string
-			Bar string
-		}
-		foo := []Foo{
-			Foo{Foo: "verylongfoo", Bar: "bar!"},
-		}
-
-		out.Reset()
-		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO         BAR  BAZ
+		PrinterPass(p, nil, `FOO  BAR  BAZ
+`)
+		PrinterPass(p, foo, `FOO         BAR  BAZ
 verylongfoo bar! <none>
-`))
-
+`)
 		// For the (un)sake of code coverage...
 		ccp := p.(*CustomColumnsPrinter)
 		ccp.Columns[0].Template = jsonpath.New("zero")
-		out.Reset()
-		Expect(p.Fprint(&out, foo)).Should(HaveOccurred())
+		PrinterFail(p, foo)
 	})
 
 	It("rejects creating custom column printers from invalid template streams", func() {
@@ -120,26 +137,13 @@ Foo Bar {Baz
 Foo Bar Baz
 `))
 		Expect(err).ShouldNot(HaveOccurred())
-
-		type Foo struct {
-			Foo string
-			Bar string
-		}
-		foo := []Foo{
-			Foo{Foo: "verylongfoo", Bar: "bar!"},
-		}
-
-		var out bytes.Buffer
-		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO         BAR  BAZ
+		PrinterPass(p, foo, `FOO         BAR  BAZ
 verylongfoo bar! <none>
-`))
-
+`)
 		// For the (un)sake of code coverage...
 		ccp := p.(*CustomColumnsPrinter)
 		ccp.Columns[0].Template = jsonpath.New("zero")
-		out.Reset()
-		Expect(p.Fprint(&out, foo)).Should(HaveOccurred())
+		PrinterFail(p, foo)
 	})
 
 	It("allows different column padding", func() {
@@ -147,24 +151,12 @@ verylongfoo bar! <none>
 		Expect(err).ShouldNot(HaveOccurred())
 		p.(*CustomColumnsPrinter).Padding = 3
 
-		var out bytes.Buffer
-		type Foo struct {
-			Foo string
-			Bar string
-		}
-		foo := []Foo{
-			Foo{Foo: "verylongfoo", Bar: "bar!"},
-		}
-		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`FOO           BAR    BAZ
+		PrinterPass(p, foo, `FOO           BAR    BAZ
 verylongfoo   bar!   <none>
-`))
-
+`)
 		p.(*CustomColumnsPrinter).HideHeaders = true
-		out.Reset()
-		Expect(p.Fprint(&out, foo)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`verylongfoo   bar!   <none>
-`))
+		PrinterPass(p, foo, `verylongfoo   bar!   <none>
+`)
 	})
 
 })

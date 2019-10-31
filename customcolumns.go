@@ -44,6 +44,7 @@ type Column struct {
 	Name     string             // Column name, for error reporting.
 	Header   string             // Column header text.
 	Template *jsonpath.JSONPath // Compiled JSONPath expression.
+	Raw      string             // Original JSONPath expression.
 }
 
 // NewCustomColumnsPrinterFromSpec returns a new custom columns printer for the
@@ -212,6 +213,7 @@ func (c *Column) SetExpression(exp string) error {
 		c.Template = jsonpath.New(c.Name)
 		return nil
 	}
+	c.Raw = exp
 	sm := jsonPathRegexp.FindStringSubmatch(exp)
 	if sm == nil {
 		return fmt.Errorf("unexpected path string, expected a 'name1.name2' or '.name1.name2' or '{name1.name2}' or '{.name1.name2}'")
