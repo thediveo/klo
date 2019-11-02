@@ -99,7 +99,7 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 	if specs.WideColumnSpec != "" {
 		wide = " 'wide',"
 	}
-	return nil, fmt.Errorf("unexpected output format, expected "+
+	return nil, fmt.Errorf("unexpected output format %q, expected "+
 		"'custom-columns', 'custom-columns-file', "+
-		"'json', 'jsonpath', 'jsonpath-file',%s or 'yaml'", wide)
+		"'json', 'jsonpath', 'jsonpath-file',%s or 'yaml'", ov[0], wide)
 }

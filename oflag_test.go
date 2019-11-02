@@ -52,6 +52,14 @@ Foo! <none>
 `)
 	})
 
+	It("-o customs-columns-format", func() {
+		BadPrinter(PrinterFromFlag("custom-columns-file=./testdata/missing.columns", nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns-file=./testdata/foobar.columns", nil)), []Foo{foo},
+			`FOO  BAR
+Foo! <none>
+`)
+	})
+
 	It("-o json", func() {
 		PrinterPass(GoodPrinter(PrinterFromFlag("json", nil)), foo, `{
     "Foo": "Foo!"

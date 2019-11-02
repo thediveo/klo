@@ -55,7 +55,8 @@ func main() {
     }
     // Create a table printer with custom columns, to be filled from fields
     // of the objects (namely, Name, Foo, and Bar fields).
-    prn, err := klo.PrinterFromFlag("", "NAME:{.Name},FOO:{.Foo},BAR:{.Bar}", "")
+    prn, err := klo.PrinterFromFlag("",
+        &klo.Specs{DefaultColumnSpec: "NAME:{.Name},FOO:{.Foo},BAR:{.Bar}"})
     if err != nil {
         panic(err)
     }
