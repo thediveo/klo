@@ -24,56 +24,58 @@ var _ = Describe("-o output options", func() {
 	foo := Foo{Foo: "Foo!"}
 
 	It("unknown -o", func() {
-		BadPrinter(PrinterFromFlag("unknown", "", "widespec"))
+		BadPrinter(PrinterFromFlag("unknown", nil))
 	})
 
 	It("default -o", func() {
-		BadPrinter(PrinterFromFlag("", "colspec", "widespec"))
-		PrinterPass(GoodPrinter(PrinterFromFlag("", "FOO:Foo,BAR:bar", "")), []Foo{foo},
+		BadPrinter(PrinterFromFlag("", nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag("",
+			&Specs{DefaultColumnSpec: "FOO:Foo,BAR:bar"})), []Foo{foo},
 			`FOO  BAR
 Foo! <none>
 `)
 	})
 
 	It("-o wide", func() {
-		PrinterPass(GoodPrinter(PrinterFromFlag("wide", "", "FOO:Foo,BAR:bar")), []Foo{foo},
+		PrinterPass(GoodPrinter(PrinterFromFlag("wide",
+			&Specs{WideColumnSpec: "FOO:Foo,BAR:bar"})), []Foo{foo},
 			`FOO  BAR
 Foo! <none>
 `)
 	})
 
 	It("-o custom-columns", func() {
-		BadPrinter(PrinterFromFlag("custom-columns", "", ""))
-		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns=FOO:Foo,BAR:bar", "", "")), []Foo{foo},
+		BadPrinter(PrinterFromFlag("custom-columns", nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns=FOO:Foo,BAR:bar", nil)), []Foo{foo},
 			`FOO  BAR
 Foo! <none>
 `)
 	})
 
 	It("-o json", func() {
-		PrinterPass(GoodPrinter(PrinterFromFlag("json", "", "")), foo, `{
+		PrinterPass(GoodPrinter(PrinterFromFlag("json", nil)), foo, `{
     "Foo": "Foo!"
 }
 `)
 	})
 
 	It("-o jsonpath", func() {
-		BadPrinter(PrinterFromFlag("jsonpath", "", ""))
-		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath={[*].Foo}", "", "")),
+		BadPrinter(PrinterFromFlag("jsonpath", nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath={[*].Foo}", nil)),
 			[]Foo{foo},
 			`Foo!`)
 	})
 
 	It("-o jsonpath-file", func() {
-		BadPrinter(PrinterFromFlag("jsonpath-file", "", ""))
-		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/missing.jsonpath", "", ""))
-		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/empty.jsonpath", "", ""))
-		PrinterFail(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/unknown.jsonpath", "", "")), []Foo{foo})
-		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/valid.jsonpath", "", "")), []Foo{foo}, `Foo!`)
+		BadPrinter(PrinterFromFlag("jsonpath-file", nil))
+		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/missing.jsonpath", nil))
+		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/empty.jsonpath", nil))
+		PrinterFail(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/unknown.jsonpath", nil)), []Foo{foo})
+		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/valid.jsonpath", nil)), []Foo{foo}, `Foo!`)
 	})
 
 	It("-o yaml", func() {
-		PrinterPass(GoodPrinter(PrinterFromFlag("yaml", "", "")), foo,
+		PrinterPass(GoodPrinter(PrinterFromFlag("yaml", nil)), foo,
 			`Foo: Foo!
 `)
 	})

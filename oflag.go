@@ -21,25 +21,37 @@ import (
 	"strings"
 )
 
+// Specs specifies custom-column formats for the default columns in
+// "-o=customcolumns" mode, and for the "-o=wide" wide columns mode.
+type Specs struct {
+	// default custom-columns spec in format
+	// "<header>:<json-path-expr>[,<header>:json-path-expr>]..."
+	DefaultColumnSpec string
+	// wide custom-columns spec in format
+	// "<header>:<json-path-expr>[,<header>:json-path-expr>]..."
+	WideColumnSpec string
+}
+
 // PrinterFromFlag returns a suitable value printer according to the output
 // format specified as the flagvalue. The "-o" flag value is passed in via the
-// flagvalue paramter (without the "-o") and should denote one of the supported
-// output formats, such as "json", "yaml", "custom-columns", et cetera.
-//
-// If the output format flagvalue is zero (""), then the returned printer will
-// default to a custom columns printer using the also specified columnspec.
-//
-// If an additional widecolumns custom column spec was given (non-zero), then
-// "-o wide" will be supported, otherwise a user trying to use the wide output
-// format will raise an error.
-func PrinterFromFlag(flagvalue string, columnspec, widecolumnsspec string) (ValuePrinter, error) {
+// flagvalue paramter (without the "-o") and should denote one of the
+// supported output formats, such as "json", "yaml", "custom-columns", et
+// cetera. The Specs parameter specifies the default custom-columns output
+// format for "-o=" and "-o=wide". If Specs is nil, then no default
+// custom-column formats will apply.
+func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
+	// Apply empty default specs, if necessary.
+	if specs == nil {
+		specs = &Specs{}
+	}
+	// If no output format is specified, default to custom columns.
 	if flagvalue == "" {
-		flagvalue = "custom-columns=" + columnspec
+		flagvalue = "custom-columns=" + specs.DefaultColumnSpec
 	}
 	// Do we support "-o wide"? Then map this to "-o customcolumns=..." for
 	// the specified wide columns spec.
-	if flagvalue == "wide" && widecolumnsspec != "" {
-		flagvalue = "custom-columns=" + widecolumnsspec
+	if flagvalue == "wide" && specs.WideColumnSpec != "" {
+		flagvalue = "custom-columns=" + specs.WideColumnSpec
 	}
 	ov := strings.Split(flagvalue, "=")
 	switch ov[0] {
@@ -48,6 +60,16 @@ func PrinterFromFlag(flagvalue string, columnspec, widecolumnsspec string) (Valu
 			return nil, fmt.Errorf("missing custom columns specification")
 		}
 		return NewCustomColumnsPrinterFromSpec(ov[1])
+	case "custom-columns-file":
+		if len(ov) != 2 {
+			return nil, fmt.Errorf("missing custom columns filename")
+		}
+		f, err := os.Open(ov[1])
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		return NewCustomColumnsPrinterFromTemplate(f)
 	case "json":
 		return NewJSONPrinter()
 	case "jsonpath":
@@ -74,8 +96,10 @@ func PrinterFromFlag(flagvalue string, columnspec, widecolumnsspec string) (Valu
 	}
 	// Unsupported/unknown output format.
 	wide := ""
-	if widecolumnsspec != "" {
+	if specs.WideColumnSpec != "" {
 		wide = " 'wide',"
 	}
-	return nil, fmt.Errorf("unexpected output format, expected 'json',%s or 'yaml'", wide)
+	return nil, fmt.Errorf("unexpected output format, expected "+
+		"'custom-columns', 'custom-columns-file', "+
+		"'json', 'jsonpath', 'jsonpath-file',%s or 'yaml'", wide)
 }
