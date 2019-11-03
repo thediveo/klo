@@ -24,7 +24,7 @@ var _ = Describe("-o output options", func() {
 	foo := Foo{Foo: "Foo!"}
 
 	It("unknown -o", func() {
-		BadPrinter(PrinterFromFlag("unknown", nil))
+		BadPrinter(PrinterFromFlag("unknown", &Specs{WideColumnSpec: "foo"}))
 	})
 
 	It("default -o", func() {
@@ -52,7 +52,8 @@ Foo! <none>
 `)
 	})
 
-	It("-o customs-columns-format", func() {
+	It("-o customs-columns-file", func() {
+		BadPrinter(PrinterFromFlag("custom-columns-file", nil))
 		BadPrinter(PrinterFromFlag("custom-columns-file=./testdata/missing.columns", nil))
 		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns-file=./testdata/foobar.columns", nil)), []Foo{foo},
 			`FOO  BAR
@@ -86,6 +87,25 @@ Foo! <none>
 		PrinterPass(GoodPrinter(PrinterFromFlag("yaml", nil)), foo,
 			`Foo: Foo!
 `)
+	})
+
+	It("-o go-template", func() {
+		BadPrinter(PrinterFromFlag(`go-template={{oops}}`, nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template`, nil)), nil,
+			"")
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template={{"ok"}}`, nil)), nil,
+			`ok`)
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template`, &Specs{GoTemplateArg: `{{"ok"}}`})), nil,
+			`ok`)
+	})
+
+	It("-o go-template-file", func() {
+		BadPrinter(PrinterFromFlag(`go-template-file`, nil))
+		BadPrinter(PrinterFromFlag(`go-template-file=./testdata/missing.tpl`, nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template-file=./testdata/ok.tpl`, nil)), nil,
+			"ok")
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template-file=`, &Specs{GoTemplateArg: "./testdata/ok.tpl"})), nil,
+			"ok")
 	})
 
 })

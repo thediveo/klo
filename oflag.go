@@ -17,6 +17,7 @@ package klo
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -30,6 +31,10 @@ type Specs struct {
 	// wide custom-columns spec in format
 	// "<header>:<json-path-expr>[,<header>:json-path-expr>]..."
 	WideColumnSpec string
+	// optional separate Go template argument to output formats "go-template"
+	// and "go-template-file". For "go-template" the arg contains the
+	// template, for "go-template-file" it contains the template filename.
+	GoTemplateArg string
 }
 
 // PrinterFromFlag returns a suitable value printer according to the output
@@ -70,6 +75,21 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 		}
 		defer f.Close()
 		return NewCustomColumnsPrinterFromTemplate(f)
+	case "go-template":
+		if specs.GoTemplateArg == "" && len(ov) == 2 {
+			return NewGoTemplatePrinter(ov[1])
+		}
+		return NewGoTemplatePrinter(specs.GoTemplateArg)
+	case "go-template-file":
+		tplfn := specs.GoTemplateArg
+		if tplfn == "" && len(ov) == 2 {
+			tplfn = ov[1]
+		}
+		tpl, err := ioutil.ReadFile(tplfn)
+		if err != nil {
+			return nil, err
+		}
+		return NewGoTemplatePrinter(string(tpl))
 	case "json":
 		return NewJSONPrinter()
 	case "jsonpath":
@@ -101,5 +121,6 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 	}
 	return nil, fmt.Errorf("unexpected output format %q, expected "+
 		"'custom-columns', 'custom-columns-file', "+
+		"'go-template', 'go-template-file', "+
 		"'json', 'jsonpath', 'jsonpath-file',%s or 'yaml'", ov[0], wide)
 }
