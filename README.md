@@ -23,11 +23,16 @@ The following output formats are supported:
 - JSON and JSONPath-customized (`-o json`, `-o jsonpath=`, and `-o
   jsonpath-file=`).
 - YAML (`-o yaml`).
+- Go templates (`-o go-template=` and `-o go-template-file=`).
 
 > **Note:** `-o name` and `-o wide` are application-specific and are basically
 > customized ASCII column formats, with just varying custom column
 > configurations. Thus, they can be easily implemented in your appliaction
 > itself and then use the existing `klo` package features.
+
+In addition, sorting is supported by wrapping an output-format printer into a
+sorting printer. This allows to sort the rows in a custom-columns output based
+on row values taken from one or even multiple columns.
 
 ## Usage
 
