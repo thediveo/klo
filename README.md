@@ -34,7 +34,7 @@ In addition, sorting is supported by wrapping an output-format printer into a
 sorting printer. This allows to sort the rows in a custom-columns output based
 on row values taken from one or even multiple columns.
 
-## Usage
+## Basic Usage
 
 The following code example prints a table with multiple columns, and the rows
 sorted by the NAME column.
@@ -80,6 +80,39 @@ NAME        FOO  BAR
 Another Two 123  Bar
 One         42
 Two         666  Bar
+```
+
+## -o Usage
+
+For supporting "-o" output format control via CLI args, choose any CLI arg
+handling package you like, such as flag, pflag, cobra, et cetera. Then, call
+`PrinterFromFlag(oflagvalue, &myspecs)`, where `oflagvalue` is the set/default
+value of the CLI arg you use for controlling the output format in your own app's
+CLI. Your `myspecs` should specify the default custom-columns format, and
+optionally a wide custom-clumns format variant. If you support go templates for
+output formatting, then you should also pass in the value of your `--template=`
+CLI arg.
+
+```go
+import (
+    "github.com/thediveo/klo"
+)
+
+func main() {
+    // Get your -o and -template flag values depending on your CLI arg toolkit.
+    templateflagvalue := ""
+    oflagvalue := "wide"
+    // Set up the specs and get a suitable output formatting printer according
+    // to the specific output format choosen and the auxiliary information given
+    // on specs and an optional Go template arg.
+    myspecs := klo.Specs{
+        DefaultColumnSpec: "FOO:{.Foo}",
+        WideColumnSpec: "FOO:{.Foo},BAR:{.Bar}",
+        GoTemplateArg: templateflagvalue,
+    }
+    prn, err := PrinterFromFlag(oflagvalue, &myspecs)
+    //...
+}
 ```
 
 ## Copyright and License

@@ -86,7 +86,10 @@ func (sp *SortingPrinter) Fprint(w io.Writer, v interface{}) error {
 	return sp.ChainedPrinter.Fprint(w, index.items)
 }
 
-//
+// keyedItems represents the complete index for sorting, that is, the index keys
+// for each row, as well as the row values themselved. For simplicity, we go for
+// two separate slices for keys and values respectively, instead of a single
+// slice of key-value struct.
 type keyedItems struct {
 	keys  []reflect.Value // results of evaluating JSONPath expressions.
 	items []reflect.Value // references the items slice to be sorted.
