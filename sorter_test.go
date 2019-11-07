@@ -15,21 +15,19 @@
 package klo
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"k8s.io/client-go/util/jsonpath"
 )
 
 var _ = Describe("-o output options", func() {
 
 	It("doesn't accept botched JSONPath expressions for sorting", func() {
-		_, err := NewSortingPrinter("{.A", nil)
-		Expect(err).Should(HaveOccurred())
-		_, err = NewSortingPrinter("{.A}", nil)
-		Expect(err).Should(HaveOccurred())
+		BadPrinter(NewSortingPrinter("{.A", nil))
+		BadPrinter(NewSortingPrinter("{.A}", nil))
 	})
 
 	It("compares i<j reflection values", func() {
@@ -100,42 +98,89 @@ var _ = Describe("-o output options", func() {
 			row{A: "aaa", B: 420},
 		}
 
-		ccp, err := NewCustomColumnsPrinterFromSpec("A:{.A},B:{.B}")
-		Expect(err).ShouldNot(HaveOccurred())
-		sp, err := NewSortingPrinter("{.A}", ccp)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		var out bytes.Buffer
-		Expect(sp.Fprint(&out, table)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`A    B
+		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A},B:{.B}"))
+		PrinterPass(GoodPrinter(NewSortingPrinter("{.A}", ccp)), table,
+			`A    B
 aaa  420
 bar  42
 foo  666
-`))
-
-		out.Reset()
-		sp, err = NewSortingPrinter("{.B}", ccp)
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(sp.Fprint(&out, table)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`A    B
+`)
+		PrinterPass(GoodPrinter(NewSortingPrinter("{.B}", ccp)), table,
+			`A    B
 bar  42
 aaa  420
 foo  666
-`))
-
-		out.Reset()
-		Expect(sp.Fprint(&out, &table)).ShouldNot(HaveOccurred())
-
-		table[2].B = 42
-		sp, err = NewSortingPrinter("{.B}{'/'}{.A}", ccp)
-		Expect(err).ShouldNot(HaveOccurred())
-		out.Reset()
-		Expect(sp.Fprint(&out, &table)).ShouldNot(HaveOccurred())
-		Expect(out.String()).Should(Equal(`A    B
+`)
+		PrinterPass(GoodPrinter(NewSortingPrinter("{.B}", ccp)), &table,
+			`A    B
+bar  42
+aaa  420
+foo  666
+`)
+		table = []row{
+			row{A: "foo", B: 42},
+			row{A: "bar", B: 42},
+			row{A: "aaa", B: 420},
+		}
+		PrinterPass(GoodPrinter(NewSortingPrinter("{.B}{'/'}{.A}", ccp)), table,
+			`A    B
 bar  42
 foo  42
 aaa  420
-`))
+`)
+		type anotherrow struct {
+			A string
+		}
+		othertable := []anotherrow{
+			anotherrow{A: "foo"},
+		}
+		PrinterPass(GoodPrinter(NewSortingPrinter("{.A}", ccp)), &othertable,
+			`A    B
+foo  <none>
+`)
+	})
+
+	It("simply passes on non-sliced things", func() {
+		r := struct {
+			A string
+			B int
+		}{A: "foo", B: 42}
+		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A},B:{.B}"))
+		PrinterPass(GoodPrinter(NewSortingPrinter("{.A}", ccp)), reflect.ValueOf(r),
+			`A    B
+foo  42
+`)
+	})
+
+	It("handles deeper errors in sort expression evaluation", func() {
+		type row struct {
+			A string
+			B int
+		}
+		table := []row{
+			row{A: "foo", B: 666},
+			row{A: "bar", B: 42},
+			row{A: "aaa", B: 420},
+		}
+		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A},B:{.B}"))
+		p := GoodPrinter(NewSortingPrinter("{.A}", ccp))
+		sp := p.(*SortingPrinter)
+		sp.SortExpr = jsonpath.New("zero")
+		PrinterFail(sp, table)
+	})
+
+	It("...", func() {
+		type row struct {
+			A []string
+		}
+		table := []row{
+			row{},
+		}
+		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A[*]}"))
+		PrinterPass(GoodPrinter(NewSortingPrinter("", ccp)), &table,
+			`A
+<none>
+`)
 	})
 
 })

@@ -147,37 +147,52 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 		fmt.Fprintln(w, strings.Join(headers, "\t"))
 	}
 	// Print value(s)...
-	if v != nil && reflect.TypeOf(v).Kind() == reflect.Slice {
-		sl := reflect.ValueOf(v)
-		for idx := 0; idx < sl.Len(); idx++ {
-			// Work on a single row and now find the results of all columns
-			// for the current object...
-			rowval := sl.Index(idx).Interface()
-			if rv, ok := rowval.(reflect.Value); ok {
-				rowval = rv.Interface()
-			}
-			rowvals := make([]string, len(p.Columns))
-			for cidx, col := range p.Columns {
-				// Calculate the result of a this column for the current row.
-				res, err := col.Template.FindResults(rowval)
-				if err != nil {
+	if v != nil {
+		if reflect.TypeOf(v).Kind() == reflect.Slice {
+			sl := reflect.ValueOf(v)
+			for idx := 0; idx < sl.Len(); idx++ {
+				// Work on a single row and now find the results of all columns
+				// for the current object...
+				rowval := sl.Index(idx).Interface()
+				if rv, ok := rowval.(reflect.Value); ok {
+					rowval = rv.Interface()
+				}
+				if err := p.printrow(w, rowval); err != nil {
 					return err
 				}
-				// Depending on the JSONPath expression, the result for this
-				// column might consist of multiple values, or even none at
-				// all.
-				if len(res) == 0 || len(res[0]) == 0 {
-					rowvals[cidx] = "<none>"
-				} else {
-					rowvals[cidx] = stringFromJSONExprResult(res, ", ")
-				}
 			}
-			// Finish this column by printing all columns' values, separated
-			// by god'ol horizontal tab control chars.
-			fmt.Fprintln(w, strings.Join(rowvals, "\t"))
+		} else {
+			if rv, ok := v.(reflect.Value); ok {
+				v = rv.Interface()
+			}
+			return p.printrow(w, v)
 		}
 	}
 	return nil
+}
+
+// printrow prints a single row, that is, a single row object.
+func (p *CustomColumnsPrinter) printrow(w io.Writer, rowval interface{}) error {
+	rowvals := make([]string, len(p.Columns))
+	for cidx, col := range p.Columns {
+		// Calculate the result of a this column for the current row.
+		res, err := col.Template.FindResults(rowval)
+		if err != nil {
+			return err
+		}
+		// Depending on the JSONPath expression, the result for this
+		// column might consist of multiple values, or even none at
+		// all.
+		if len(res) == 0 || len(res[0]) == 0 {
+			rowvals[cidx] = "<none>"
+		} else {
+			rowvals[cidx] = stringFromJSONExprResult(res, ", ")
+		}
+	}
+	// Print this column by printing all columns' values, separated by god'ol
+	// horizontal tab control chars.
+	_, err := fmt.Fprintln(w, strings.Join(rowvals, "\t"))
+	return err
 }
 
 // Stringifies a JSONPath expression result.
