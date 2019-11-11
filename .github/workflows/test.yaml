@@ -18,7 +18,11 @@ jobs:
     - name: Check out Go module
       uses: actions/checkout@v1
     
-    - name: Get dependencies and build
+    - name: Get dependencies (incl. tests)
+      run |
+        go get -d -v -t ./...
+
+    - name: Build package
       run: |
         go build -v ./...
 
