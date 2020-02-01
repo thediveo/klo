@@ -2,6 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/TheDiveO/klo?status.svg)](http://godoc.org/github.com/TheDiveO/klo)
 ![GitHub](https://img.shields.io/github/license/thediveo/go-asciitree)
+![build and test](https://github.com/TheDiveO/klo/workflows/build%20and%20test/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/klo)](https://goreportcard.com/report/github.com/thediveo/klo)
 
 `klo` is a Go package for `kubectl`-like output of Go values (such as structs,
