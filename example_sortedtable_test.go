@@ -31,9 +31,9 @@ func Example_sortedtable() {
 	}
 	// A slice of objects we want to print as a table with custom columns.
 	list := []myobj{
-		myobj{Name: "One", Foo: 42},
-		myobj{Name: "Two", Foo: 666, Bar: "Bar"},
-		myobj{Name: "Another Two", Foo: 123, Bar: "Bar"},
+		{Name: "One", Foo: 42},
+		{Name: "Two", Foo: 666, Bar: "Bar"},
+		{Name: "Another Two", Foo: 123, Bar: "Bar"},
 	}
 	// Create a table printer with custom columns, to be filled from fields
 	// of the objects (namely, Name, Foo, and Bar fields).

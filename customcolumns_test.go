@@ -34,7 +34,7 @@ var _ = Describe("custom columns printer", func() {
 	}
 
 	var foo = []tfoo{
-		tfoo{Foo: "verylongfoo", Bar: "bar!"},
+		{Foo: "verylongfoo", Bar: "bar!"},
 	}
 
 	It("parses column spec expressions", func() {

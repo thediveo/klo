@@ -27,7 +27,7 @@ var _ = Describe("YAML printer", func() {
 	})
 
 	It("handles YAML failures", func() {
-		// For those 100% code coverage afficionados, let's test that we
+		// For those 100% code coverage aficionados, let's test that we
 		// correctly handle making YAML marshalling fail and that we correctly
 		// handle it in the printer ... luckily,
 		// https://stackoverflow.com/a/33964549 has the answer as to how make

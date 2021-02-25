@@ -40,42 +40,42 @@ var _ = Describe("-o output options", func() {
 		v2 := 42
 
 		tests := []test{
-			test{reflect.ValueOf(int8(42)), reflect.ValueOf(int8(43)), true},
-			test{reflect.ValueOf(int8(127)), reflect.ValueOf(int8(43)), false},
-			test{reflect.ValueOf(int16(42)), reflect.ValueOf(int16(43)), true},
-			test{reflect.ValueOf(int32(42)), reflect.ValueOf(int32(43)), true},
-			test{reflect.ValueOf(int64(42)), reflect.ValueOf(int64(43)), true},
-			test{reflect.ValueOf(int8(42)), reflect.ValueOf(int64(666)), true},
-			test{reflect.ValueOf(int8(42)), reflect.ValueOf(float32(42.5)), true},
-			test{reflect.ValueOf(int8(42)), reflect.ValueOf(float64(42.5)), true},
+			{reflect.ValueOf(int8(42)), reflect.ValueOf(int8(43)), true},
+			{reflect.ValueOf(int8(127)), reflect.ValueOf(int8(43)), false},
+			{reflect.ValueOf(int16(42)), reflect.ValueOf(int16(43)), true},
+			{reflect.ValueOf(int32(42)), reflect.ValueOf(int32(43)), true},
+			{reflect.ValueOf(int64(42)), reflect.ValueOf(int64(43)), true},
+			{reflect.ValueOf(int8(42)), reflect.ValueOf(int64(666)), true},
+			{reflect.ValueOf(int8(42)), reflect.ValueOf(float32(42.5)), true},
+			{reflect.ValueOf(int8(42)), reflect.ValueOf(float64(42.5)), true},
 
-			test{reflect.ValueOf(uint8(42)), reflect.ValueOf(uint8(43)), true},
-			test{reflect.ValueOf(uint8(255)), reflect.ValueOf(uint8(43)), false},
-			test{reflect.ValueOf(uint16(42)), reflect.ValueOf(uint16(43)), true},
-			test{reflect.ValueOf(uint32(42)), reflect.ValueOf(uint32(43)), true},
-			test{reflect.ValueOf(uint64(42)), reflect.ValueOf(uint64(43)), true},
-			test{reflect.ValueOf(uint8(42)), reflect.ValueOf(uint64(666)), true},
-			test{reflect.ValueOf(uint8(42)), reflect.ValueOf(float32(42.5)), true},
-			test{reflect.ValueOf(uint8(42)), reflect.ValueOf(float64(42.5)), true},
+			{reflect.ValueOf(uint8(42)), reflect.ValueOf(uint8(43)), true},
+			{reflect.ValueOf(uint8(255)), reflect.ValueOf(uint8(43)), false},
+			{reflect.ValueOf(uint16(42)), reflect.ValueOf(uint16(43)), true},
+			{reflect.ValueOf(uint32(42)), reflect.ValueOf(uint32(43)), true},
+			{reflect.ValueOf(uint64(42)), reflect.ValueOf(uint64(43)), true},
+			{reflect.ValueOf(uint8(42)), reflect.ValueOf(uint64(666)), true},
+			{reflect.ValueOf(uint8(42)), reflect.ValueOf(float32(42.5)), true},
+			{reflect.ValueOf(uint8(42)), reflect.ValueOf(float64(42.5)), true},
 
-			test{reflect.ValueOf(float32(42.9)), reflect.ValueOf(float32(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(float64(43)), true},
-			test{reflect.ValueOf(float32(42.9)), reflect.ValueOf(int8(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(int16(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(int32(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(int64(43)), true},
-			test{reflect.ValueOf(float32(42.9)), reflect.ValueOf(uint8(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(uint16(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(uint32(43)), true},
-			test{reflect.ValueOf(float64(42.9)), reflect.ValueOf(uint64(43)), true},
+			{reflect.ValueOf(float32(42.9)), reflect.ValueOf(float32(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(float64(43)), true},
+			{reflect.ValueOf(float32(42.9)), reflect.ValueOf(int8(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(int16(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(int32(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(int64(43)), true},
+			{reflect.ValueOf(float32(42.9)), reflect.ValueOf(uint8(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(uint16(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(uint32(43)), true},
+			{reflect.ValueOf(float64(42.9)), reflect.ValueOf(uint64(43)), true},
 
-			test{reflect.ValueOf("bar"), reflect.ValueOf("foo"), true},
-			test{reflect.ValueOf("foo"), reflect.ValueOf("bar"), false},
-			test{reflect.ValueOf("bar666"), reflect.ValueOf("bar42"), false},
+			{reflect.ValueOf("bar"), reflect.ValueOf("foo"), true},
+			{reflect.ValueOf("foo"), reflect.ValueOf("bar"), false},
+			{reflect.ValueOf("bar666"), reflect.ValueOf("bar42"), false},
 
-			test{reflect.ValueOf("666"), reflect.ValueOf(int16(42)), false},
+			{reflect.ValueOf("666"), reflect.ValueOf(int16(42)), false},
 
-			test{reflect.ValueOf(&v1), reflect.ValueOf(&v2), false},
+			{reflect.ValueOf(&v1), reflect.ValueOf(&v2), false},
 		}
 
 		for _, t := range tests {
@@ -93,9 +93,9 @@ var _ = Describe("-o output options", func() {
 			B int
 		}
 		table := []row{
-			row{A: "foo", B: 666},
-			row{A: "bar", B: 42},
-			row{A: "aaa", B: 420},
+			{A: "foo", B: 666},
+			{A: "bar", B: 42},
+			{A: "aaa", B: 420},
 		}
 
 		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A},B:{.B}"))
@@ -118,9 +118,9 @@ aaa  420
 foo  666
 `)
 		table = []row{
-			row{A: "foo", B: 42},
-			row{A: "bar", B: 42},
-			row{A: "aaa", B: 420},
+			{A: "foo", B: 42},
+			{A: "bar", B: 42},
+			{A: "aaa", B: 420},
 		}
 		PrinterPass(GoodPrinter(NewSortingPrinter("{.B}{'/'}{.A}", ccp)), table,
 			`A    B
@@ -132,7 +132,7 @@ aaa  420
 			A string
 		}
 		othertable := []anotherrow{
-			anotherrow{A: "foo"},
+			{A: "foo"},
 		}
 		PrinterPass(GoodPrinter(NewSortingPrinter("{.A}", ccp)), &othertable,
 			`A    B
@@ -158,9 +158,9 @@ foo  42
 			B int
 		}
 		table := []row{
-			row{A: "foo", B: 666},
-			row{A: "bar", B: 42},
-			row{A: "aaa", B: 420},
+			{A: "foo", B: 666},
+			{A: "bar", B: 42},
+			{A: "aaa", B: 420},
 		}
 		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A},B:{.B}"))
 		p := GoodPrinter(NewSortingPrinter("{.A}", ccp))
@@ -174,7 +174,7 @@ foo  42
 			A []string
 		}
 		table := []row{
-			row{},
+			{},
 		}
 		ccp := GoodPrinter(NewCustomColumnsPrinterFromSpec("A:{.A[*]}"))
 		PrinterPass(GoodPrinter(NewSortingPrinter("", ccp)), &table,

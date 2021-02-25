@@ -39,7 +39,7 @@ type Specs struct {
 
 // PrinterFromFlag returns a suitable value printer according to the output
 // format specified as the flagvalue. The "-o" flag value is passed in via the
-// flagvalue paramter (without the "-o") and should denote one of the
+// flagvalue parameter (without the "-o") and should denote one of the
 // supported output formats, such as "json", "yaml", "custom-columns", et
 // cetera. The Specs parameter specifies the default custom-columns output
 // format for "-o=" and "-o=wide". If Specs is nil, then no default

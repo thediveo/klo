@@ -30,11 +30,11 @@ var _ = Describe("JSON printer", func() {
 	})
 
 	It("handles JSON failures", func() {
-		// For those 100% code coverage afficionados, let's test that we
+		// For those 100% code coverage aficionados, let's test that we
 		// correctly handle making JSON marshalling fail and that we correctly
 		// handle it in the printer ... luckily,
-		// https://stackoverflow.com/a/33964549 has the answer as to how make
-		// it fail.
+		// https://stackoverflow.com/a/33964549 has the answer as to how make it
+		// fail.
 		p := GoodPrinter(NewJSONPrinter())
 		Expect(p.Fprint(nil, make(chan struct{}))).ShouldNot(Succeed())
 	})

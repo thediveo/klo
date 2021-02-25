@@ -20,8 +20,8 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/fvbommel/sortorder"
 	"k8s.io/client-go/util/jsonpath"
-	"vbom.ml/util/sortorder"
 )
 
 // SortingPrinter sorts slice values first, before it writes them to the

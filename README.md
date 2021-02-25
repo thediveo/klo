@@ -1,6 +1,6 @@
 # klo
 
-[![GoDoc](https://godoc.org/github.com/TheDiveO/klo?status.svg)](http://godoc.org/github.com/TheDiveO/klo)
+[![Go Reference](https://pkg.go.dev/badge/github.com/thediveo/klo.svg)](https://pkg.go.dev/github.com/thediveo/klo)
 ![GitHub](https://img.shields.io/github/license/thediveo/go-asciitree)
 ![build and test](https://github.com/TheDiveO/klo/workflows/build%20and%20test/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/klo)](https://goreportcard.com/report/github.com/thediveo/klo)
