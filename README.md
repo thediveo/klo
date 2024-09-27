@@ -119,8 +119,14 @@ func main() {
 }
 ```
 
+## Supported Go Versions
+
+`klo` supports versions of Go that are noted by the [Go release
+policy](https://golang.org/doc/devel/release.html#policy), that is, major
+versions _N_ and _N_-1 (where _N_ is the current major version).
+
 ## Copyright and License
 
-`klo` is Copyright 2019 Harald Albrecht, and licensed under the [Apache
+`klo` is Copyright 2019–2024 Harald Albrecht, and licensed under the [Apache
 License, Version
 2.0](https://github.com/TheDiveO/go-mntinfo/blob/master/LICENSE).
