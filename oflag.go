@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"text/template"
 )
 
 // Specs specifies custom-column formats for the default columns in
@@ -35,6 +36,8 @@ type Specs struct {
 	// and "go-template-file". For "go-template" the arg contains the
 	// template, for "go-template-file" it contains the template filename.
 	GoTemplateArg string
+	// optional any functions to be made available in go template"
+	GoTemplateFuncMap template.FuncMap
 }
 
 // PrinterFromFlag returns a suitable value printer according to the output
@@ -77,9 +80,9 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 		return NewCustomColumnsPrinterFromTemplate(f)
 	case "go-template":
 		if specs.GoTemplateArg == "" && len(ov) == 2 {
-			return NewGoTemplatePrinter(ov[1])
+			return NewGoTemplatePrinterWithFuncs(ov[1], specs.GoTemplateFuncMap)
 		}
-		return NewGoTemplatePrinter(specs.GoTemplateArg)
+		return NewGoTemplatePrinterWithFuncs(specs.GoTemplateArg, specs.GoTemplateFuncMap)
 	case "go-template-file":
 		tplfn := specs.GoTemplateArg
 		if tplfn == "" && len(ov) == 2 {
@@ -89,7 +92,7 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 		if err != nil {
 			return nil, err
 		}
-		return NewGoTemplatePrinter(string(tpl))
+		return NewGoTemplatePrinterWithFuncs(string(tpl), specs.GoTemplateFuncMap)
 	case "json":
 		return NewJSONPrinter()
 	case "jsonpath":

@@ -28,7 +28,13 @@ type GoTemplatePrinter struct {
 
 // NewGoTemplatePrinter returns a printer for outputting values in JSON format.
 func NewGoTemplatePrinter(tmpl string) (ValuePrinter, error) {
-	t, err := template.New("template").Parse(tmpl)
+	return NewGoTemplatePrinterWithFuncs(tmpl, nil)
+}
+
+// NewGoTemplatePrinterWithFuncs returns a printer for outputting values in JSON
+// format, providing template functions.
+func NewGoTemplatePrinterWithFuncs(tmpl string, funcMap template.FuncMap) (ValuePrinter, error) {
+	t, err := template.New("template").Funcs(funcMap).Parse(tmpl)
 	if err != nil {
 		return nil, err
 	}
