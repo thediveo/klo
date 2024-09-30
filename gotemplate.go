@@ -38,6 +38,18 @@ func NewGoTemplatePrinter(tmpl string) (ValuePrinter, error) {
 	}, nil
 }
 
+// NewGoTemplatePrinterWithFuncs returns a printer for outputting values in JSON format.
+func NewGoTemplatePrinterWithFuncs(tmpl string, funcMap template.FuncMap) (ValuePrinter, error) {
+	t, err := template.New("template").Funcs(funcMap).Parse(tmpl)
+	if err != nil {
+		return nil, err
+	}
+	return &GoTemplatePrinter{
+		Template: t,
+		raw:      tmpl,
+	}, nil
+}
+
 // Fprint prints a value in JSON format.
 func (p *GoTemplatePrinter) Fprint(w io.Writer, v interface{}) (err error) {
 	defer func() {
