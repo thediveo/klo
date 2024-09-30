@@ -86,6 +86,9 @@ One         42
 Two         666  Bar
 ```
 
+In addition, `NewGoTemplatePrinterWithFuncs` allows providing template
+functions.
+
 ## -o Usage
 
 For supporting "-o" output format control via CLI args, choose any CLI arg
