@@ -30,7 +30,7 @@ var _ = Describe("testwriter", func() {
 		n, err := w.Write([]byte(s))
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(n).Should(Equal(len(s)))
-		Expect(out.String()).Should(Equal("DON'T_PANIC↵\n"))
+		Expect(out.String()).Should(Equal("DON'T␣PANIC↵\n"))
 	})
 
 })

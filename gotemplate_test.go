@@ -40,45 +40,45 @@ bar
 `)
 	})
 
-})
+	When("given a function map", func() {
 
-var _ = Describe("Go template printer with funcs", func() {
+		It("gracefully fails on invalid templates", func() {
+			BadPrinter(NewGoTemplatePrinterWithFuncs(`{{oops}}`, nil))
+		})
 
-	It("gracefully fails on invalid templates", func() {
-		BadPrinter(NewGoTemplatePrinterWithFuncs(`{{oops}}`, nil))
-	})
+		It("catches template execution panics", func() {
+			p := GoodPrinter(NewGoTemplatePrinterWithFuncs(`{{"oops"}}`, nil))
+			ExpectWithOffset(1, p.Fprint(nil, nil)).Should(HaveOccurred())
+		})
 
-	It("catches template execution panics", func() {
-		p := GoodPrinter(NewGoTemplatePrinterWithFuncs(`{{"oops"}}`, nil))
-		ExpectWithOffset(1, p.Fprint(nil, nil)).Should(HaveOccurred())
-	})
-
-	It("templates", func() {
-		p := GoodPrinter(NewGoTemplatePrinterWithFuncs(`{{range .}}{{.}}{{println}}{{end}}`, nil))
-		PrinterPass(p, []string{"foo", "bar"}, `foo
+		It("templates", func() {
+			p := GoodPrinter(NewGoTemplatePrinterWithFuncs(`{{range .}}{{.}}{{println}}{{end}}`, nil))
+			PrinterPass(p, []string{"foo", "bar"}, `foo
 bar
 `)
-	})
+		})
 
-	It("gracefully fails for missing template functions", func() {
-		BadPrinter(NewGoTemplatePrinterWithFuncs(`{{range .}}{{ $intValue := atoi . }}{{ add $intValue 1 }}{{end}}`, template.FuncMap{
-			"add": func(a, b int) int {
-				return a + b
-			},
-		}))
-	})
+		It("gracefully fails for missing template functions", func() {
+			BadPrinter(NewGoTemplatePrinterWithFuncs(`{{range .}}{{ $intValue := atoi . }}{{ add $intValue 1 }}{{end}}`, template.FuncMap{
+				"add": func(a, b int) int {
+					return a + b
+				},
+			}))
+		})
 
-	It("template funcs", func() {
-		p := GoodPrinter(NewGoTemplatePrinterWithFuncs(`{{range .}}{{ $intValue := atoi . }}{{ add $intValue 1 }}{{end}}`, template.FuncMap{
-			"add": func(a, b int) int {
-				return a + b
-			},
-			"atoi": func(s string) int {
-				i, _ := strconv.Atoi(s)
-				return i
-			},
-		}))
-		PrinterPass(p, []string{"10"}, `11`)
+		It("template funcs", func() {
+			p := GoodPrinter(NewGoTemplatePrinterWithFuncs(`{{range .}}{{ $intValue := atoi . }}{{ add $intValue 1 }}{{end}}`, template.FuncMap{
+				"add": func(a, b int) int {
+					return a + b
+				},
+				"atoi": func(s string) int {
+					i, _ := strconv.Atoi(s)
+					return i
+				},
+			}))
+			PrinterPass(p, []string{"10"}, `11`)
+		})
+
 	})
 
 })

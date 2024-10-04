@@ -49,8 +49,8 @@ func Example_sortedtable() {
 	}
 	table.Fprint(out, list)
 	// Output:
-	// NAME________FOO__BAR↵
-	// Another_Two_123__Bar↵
-	// One_________42___↵
-	// Two_________666__Bar↵
+	// NAME␣␣␣␣␣␣␣␣FOO␣␣BAR↵
+	// Another␣Two␣123␣␣Bar↵
+	// One␣␣␣␣␣␣␣␣␣42␣␣␣↵
+	// Two␣␣␣␣␣␣␣␣␣666␣␣Bar↵
 }
