@@ -32,13 +32,13 @@ type TestWriter struct {
 	w io.Writer
 }
 
-// Write replaces all spaces (0x20) with underscores and adorns all new lines
-// \n with a "downwards arrow with corner leftwards" before writing the
-// outcome to the chained writer.
+// Write replaces all spaces (0x20) with “␣” (&blanks;) and adorns all new lines
+// \n with a “downwards arrow with corner leftwards” before writing the outcome
+// to the chained writer.
 func (nl *TestWriter) Write(p []byte) (n int, err error) {
 	s := bytes.ReplaceAll(
 		bytes.ReplaceAll(p, []byte("\n"), []byte("↵\n")),
-		[]byte(" "), []byte("_"))
+		[]byte(" "), []byte("␣"))
 	n, err = nl.w.Write(s)
 	// This is an ugly hack to make this working: as the string to be written
 	// might grow due to the \n adornments, yet several callers won't take

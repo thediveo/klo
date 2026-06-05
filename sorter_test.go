@@ -170,7 +170,7 @@ foo  42
 		PrinterFail(sp, table)
 	})
 
-	It("...", func() {
+	It("prints <none> for JSONPaths to non-existing fields ", func() {
 		type row struct {
 			A []string
 		}
