@@ -24,19 +24,19 @@ import (
 
 func TestKlo(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "klo suite")
+	RunSpecs(t, "klo package")
 }
 
 // PrinterPass checks that a ValuePrinter correctly renders the expected
 // output.
-func PrinterPass(p ValuePrinter, v interface{}, expected string) {
+func PrinterPass(p ValuePrinter, v any, expected string) {
 	var out bytes.Buffer
 	ExpectWithOffset(1, p.Fprint(&out, v)).ShouldNot(HaveOccurred())
 	ExpectWithOffset(1, out.String()).Should(Equal(expected))
 }
 
 // PrinterFail expects the ValuePrinter to correctly fail.
-func PrinterFail(p ValuePrinter, v interface{}) {
+func PrinterFail(p ValuePrinter, v any) {
 	var out bytes.Buffer
 	ExpectWithOffset(1, p.Fprint(&out, v)).Should(HaveOccurred())
 }

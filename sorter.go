@@ -50,7 +50,7 @@ func NewSortingPrinter(expr string, p ValuePrinter) (ValuePrinter, error) {
 
 // Fprint first sorts values according to a JSONPath expression used for
 // sorting, then chains to the next ValuePrinter for printing.
-func (sp *SortingPrinter) Fprint(w io.Writer, v interface{}) error {
+func (sp *SortingPrinter) Fprint(w io.Writer, v any) error {
 	val := reflect.ValueOf(v)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()

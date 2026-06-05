@@ -23,5 +23,5 @@ import (
 
 func TestTestutil(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "testutil suite")
+	RunSpecs(t, "klo/testutil package")
 }

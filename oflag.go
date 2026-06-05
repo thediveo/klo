@@ -17,7 +17,6 @@ package klo
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -76,7 +75,7 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		return NewCustomColumnsPrinterFromTemplate(f)
 	case "go-template":
 		if specs.GoTemplateArg == "" && len(ov) == 2 {
@@ -88,7 +87,7 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 		if tplfn == "" && len(ov) == 2 {
 			tplfn = ov[1]
 		}
-		tpl, err := ioutil.ReadFile(tplfn)
+		tpl, err := os.ReadFile(tplfn)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +107,7 @@ func PrinterFromFlag(flagvalue string, specs *Specs) (ValuePrinter, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		sc := bufio.NewScanner(f)
 		if (!sc.Scan() && sc.Err() != nil) || (sc.Text() == "") {
 			return nil, fmt.Errorf("missing JSONPath expression in %q", ov[1])

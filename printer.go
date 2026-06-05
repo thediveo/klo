@@ -19,5 +19,5 @@ import "io"
 // ValuePrinter neatly prints values (especially slices of structs) to a
 // writer, applying printer-specific formatting.
 type ValuePrinter interface {
-	Fprint(w io.Writer, v interface{}) error
+	Fprint(w io.Writer, v any) error
 }

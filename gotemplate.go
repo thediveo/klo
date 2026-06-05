@@ -45,7 +45,7 @@ func NewGoTemplatePrinterWithFuncs(tmpl string, funcMap template.FuncMap) (Value
 }
 
 // Fprint prints a value in JSON format.
-func (p *GoTemplatePrinter) Fprint(w io.Writer, v interface{}) (err error) {
+func (p *GoTemplatePrinter) Fprint(w io.Writer, v any) (err error) {
 	defer func() {
 		if tp := recover(); tp != nil {
 			err = fmt.Errorf("template panicked: %+v", tp)

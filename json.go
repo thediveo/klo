@@ -28,7 +28,7 @@ func NewJSONPrinter() (ValuePrinter, error) {
 }
 
 // Fprint prints a value in JSON format.
-func (p *JSONPrinter) Fprint(w io.Writer, v interface{}) error {
+func (p *JSONPrinter) Fprint(w io.Writer, v any) error {
 	txt, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
 		return err

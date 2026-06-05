@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"k8s.io/client-go/util/jsonpath"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"k8s.io/client-go/util/jsonpath"
 )
 
 var _ = Describe("-o output options", func() {
