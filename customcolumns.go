@@ -127,7 +127,7 @@ func NewCustomColumnsPrinterFromTemplate(tr io.Reader) (ValuePrinter, error) {
 // printer. The table is then written to the specified writer. If this writer
 // is already a tabwriter, then it is the caller's responsibility to flush the
 // tabwriter when it's the right point to do so.
-func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
+func (p *CustomColumnsPrinter) Fprint(w io.Writer, v any) error {
 	// If the writer given isn't a tabwriter, let's wrap it into one! And only
 	// then ensure that the tabbed table gets flushed, so the column widths
 	// get calculated and the columns properly aligned. If the caller gave us
@@ -135,7 +135,7 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 	// table when necessary.
 	if _, ok := w.(*tabwriter.Writer); !ok {
 		tw := tabwriter.NewWriter(w, 5, 8, p.Padding, ' ', 0)
-		defer tw.Flush()
+		defer func() { _ = tw.Flush() }()
 		w = tw
 	}
 	// Print column headers ... but only if not hidden...
@@ -144,7 +144,7 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 		for idx, column := range p.Columns {
 			headers[idx] = column.Header
 		}
-		fmt.Fprintln(w, strings.Join(headers, "\t"))
+		_, _ = fmt.Fprintln(w, strings.Join(headers, "\t"))
 	}
 	// Print value(s)...
 	if v != nil {
@@ -172,7 +172,7 @@ func (p *CustomColumnsPrinter) Fprint(w io.Writer, v interface{}) error {
 }
 
 // printrow prints a single row, that is, a single row object.
-func (p *CustomColumnsPrinter) printrow(w io.Writer, rowval interface{}) error {
+func (p *CustomColumnsPrinter) printrow(w io.Writer, rowval any) error {
 	rowvals := make([]string, len(p.Columns))
 	for cidx, col := range p.Columns {
 		// Calculate the result of a this column for the current row.
@@ -218,10 +218,11 @@ var jsonPathRegexp = regexp.MustCompile(`^\{\.?([^{}]+)\}$|^\.?([^{}]+)$`)
 // SetExpression sets the JSONPath expression for a specific column. It
 // accepts a more relaxed JSONPath expression syntax in the same way kubectl
 // does for its custom columns. In particular, it accepts:
-//   * x.y.z ... without leading "." or curly braces.
-//   * {x.y.z} ... without leading ".", but at least curly braces.
-//   * .x.y.z ... without curly braces.
-//   * {.x.y.z} ... and finally as "standard".
+//   - x.y.z ... without leading "." or curly braces.
+//   - {x.y.z} ... without leading ".", but at least curly braces.
+//   - .x.y.z ... without curly braces.
+//   - {.x.y.z} ... and finally as "standard".
+//
 // Additionally, the empty expression "" also gets accepted.
 func (c *Column) SetExpression(exp string) error {
 	if exp == "" {

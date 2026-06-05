@@ -19,7 +19,7 @@ import (
 
 	"k8s.io/client-go/util/jsonpath"
 
-	t "github.com/thediveo/klo/testutil"
+	"github.com/onsi/gomega/types"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -37,28 +37,33 @@ var _ = Describe("custom columns printer", func() {
 		{Foo: "verylongfoo", Bar: "bar!"},
 	}
 
-	It("parses column spec expressions", func() {
-		var c Column
-		t.PassFail(t.PASSFAILS{
-			t.PASS{"empty spec", c.SetExpression("")},
-			t.PASS{"relaxed spec", c.SetExpression("foo")},
-			t.PASS{"relaxed . spec", c.SetExpression(".foo")},
-			t.PASS{"relaxed {} spec", c.SetExpression("{foo}")},
-			t.PASS{"correct spec", c.SetExpression("{.foo}")},
-			t.FAIL{"incomplete { spec", c.SetExpression("{foo")},
-			t.FAIL{"incomplete [ spec", c.SetExpression("foo[0")},
-		}) //nolint:composites
-	})
+	var (
+		PASS = Succeed()
+		FAIL = Not(Succeed())
+	)
 
-	It("rejects bad column specs", func() {
-		t.PassFail(t.PASSFAILS{
-			t.FAIL{"empty spec", t.Err(NewCustomColumnsPrinterFromSpec(""))},
-			t.FAIL{"missing column expressions",
-				t.Err(NewCustomColumnsPrinterFromSpec("FOO,BAR"))},
-			t.FAIL{"malformed column expression",
-				t.Err(NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:{bar"))},
-		}) //nolint:composites
-	})
+	DescribeTable("parses column spec expressions",
+		func(expr string, outcome types.GomegaMatcher) {
+			err := (&Column{}).SetExpression(expr)
+			Expect(err).To(outcome)
+		},
+		Entry("empty spec", "", PASS),
+		Entry("relaxed spec", "foo", PASS),
+		Entry("relaxed . spec", ".foo", PASS),
+		Entry("relaxed {} spec", "{foo}", PASS),
+		Entry("correct spec", "{.foo}", PASS),
+		Entry("incomplete { spec", "{foo", FAIL),
+		Entry("incomplete [ spec", "foo[0", FAIL),
+	)
+
+	DescribeTable("rejects bad column specs",
+		func(spec string) {
+			Expect(NewCustomColumnsPrinterFromSpec(spec)).Error().To(HaveOccurred())
+		},
+		Entry("empty spec", ""),
+		Entry("missing column expression", "FOO,BAR"),
+		Entry("malformed column expression", "FOO:foo,BAR:{bar"),
+	)
 
 	It("creates custom column printer from spec string", func() {
 		p := GoodPrinter(NewCustomColumnsPrinterFromSpec("FOO:foo,BAR:.bar"))
@@ -87,32 +92,16 @@ verylongfoo bar! <none>
 		PrinterFail(p, foo)
 	})
 
-	It("rejects creating custom column printers from invalid template streams", func() {
-		t.PassFail(t.PASSFAILS{
-			t.FAIL{"empty template stream",
-				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-					"")))},
-			t.FAIL{"2 empty lines",
-				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-					`   
-   
-`)))},
-			t.FAIL{"only header line",
-				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-					`FOO BAR
-`)))},
-			t.FAIL{"inconsistent # of columns",
-				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-					`FOO BAR
-foo bar baz
-`)))},
-			t.FAIL{"malformed column JSONPath expression",
-				t.Err(NewCustomColumnsPrinterFromTemplate(strings.NewReader(
-					`FOO BAR BAZ
-Foo Bar {Baz
-`)))},
-		})
-	})
+	DescribeTable("rejects creating custom column printers from invalid template streams",
+		func(stream string) {
+			Expect(NewCustomColumnsPrinterFromTemplate(strings.NewReader(stream))).Error().To(HaveOccurred())
+		},
+		Entry("empty template stream", ""),
+		Entry("2 empty lines", "\n\n"),
+		Entry("only header line", "FOO BAR\n"),
+		Entry("inconsistent # of columns", "FOO BAR\foo bar baz\n"),
+		Entry("malformed column JSONPath expression", "FOO BAR BAZ\nFoo Bar {Baz"),
+	)
 
 	It("prints neat tables using templates", func() {
 		p := GoodPrinter(NewCustomColumnsPrinterFromTemplate(strings.NewReader(

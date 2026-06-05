@@ -1,10 +1,10 @@
 # klo
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/thediveo/klo.svg)](https://pkg.go.dev/github.com/thediveo/klo)
-![GitHub](https://img.shields.io/github/license/thediveo/go-asciitree)
-![build and test](https://github.com/TheDiveO/klo/workflows/build%20and%20test/badge.svg?branch=master)
+![GitHub](https://img.shields.io/github/license/thediveo/klo)
+![build and test](https://github.com/thediveo/klo/actions/workflows/buildandtest.yaml/badge.svg?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thediveo/klo)](https://goreportcard.com/report/github.com/thediveo/klo)
-![Coverage](https://img.shields.io/badge/Coverage-95.2%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-99.5%25-brightgreen)
 
 `klo` is a Go package for `kubectl`-like output of Go values (such as structs,
 maps, et cetera) in several output formats. You might want to use this package
@@ -122,6 +122,18 @@ func main() {
 }
 ```
 
+## DevContainer
+
+> [!CAUTION]
+>
+> Do **not** use VSCode's "~~Dev Containers: Clone Repository in Container
+> Volume~~" command, as it is utterly broken by design, ignoring
+> `.devcontainer/devcontainer.json`.
+
+1. `git clone https://github.com/thediveo/klo`
+2. in VSCode: Ctrl+Shift+P, "Dev Containers: Open Workspace in Container..."
+3. select `klo.code-workspace` and off you go...
+
 ## Supported Go Versions
 
 `klo` supports versions of Go that are noted by the [Go release
@@ -130,6 +142,6 @@ versions _N_ and _N_-1 (where _N_ is the current major version).
 
 ## Copyright and License
 
-`klo` is Copyright 2019–2024 Harald Albrecht, and licensed under the [Apache
+`klo` is Copyright 2019–2026 Harald Albrecht, and licensed under the [Apache
 License, Version
 2.0](https://github.com/TheDiveO/go-mntinfo/blob/master/LICENSE).

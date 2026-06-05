@@ -47,7 +47,7 @@ func Example_sortedtable() {
 	if err != nil {
 		panic(err)
 	}
-	table.Fprint(out, list)
+	_ = table.Fprint(out, list)
 	// Output:
 	// NAME________FOO__BAR↵
 	// Another_Two_123__Bar↵
