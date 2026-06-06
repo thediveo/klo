@@ -54,8 +54,8 @@ Foo! <none>
 
 	It("-o customs-columns-file", func() {
 		BadPrinter(PrinterFromFlag("custom-columns-file", nil))
-		BadPrinter(PrinterFromFlag("custom-columns-file=./testdata/missing.columns", nil))
-		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns-file=./testdata/foobar.columns", nil)), []Foo{foo},
+		BadPrinter(PrinterFromFlag("custom-columns-file=./_testdata/missing.columns", nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag("custom-columns-file=./_testdata/foobar.columns", nil)), []Foo{foo},
 			`FOO  BAR
 Foo! <none>
 `)
@@ -77,10 +77,10 @@ Foo! <none>
 
 	It("-o jsonpath-file", func() {
 		BadPrinter(PrinterFromFlag("jsonpath-file", nil))
-		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/missing.jsonpath", nil))
-		BadPrinter(PrinterFromFlag("jsonpath-file=./testdata/empty.jsonpath", nil))
-		PrinterFail(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/unknown.jsonpath", nil)), []Foo{foo})
-		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath-file=./testdata/valid.jsonpath", nil)), []Foo{foo}, `Foo!`)
+		BadPrinter(PrinterFromFlag("jsonpath-file=./_testdata/missing.jsonpath", nil))
+		BadPrinter(PrinterFromFlag("jsonpath-file=./_testdata/empty.jsonpath", nil))
+		PrinterFail(GoodPrinter(PrinterFromFlag("jsonpath-file=./_testdata/unknown.jsonpath", nil)), []Foo{foo})
+		PrinterPass(GoodPrinter(PrinterFromFlag("jsonpath-file=./_testdata/valid.jsonpath", nil)), []Foo{foo}, `Foo!`)
 	})
 
 	It("-o yaml", func() {
@@ -101,10 +101,10 @@ Foo! <none>
 
 	It("-o go-template-file", func() {
 		BadPrinter(PrinterFromFlag(`go-template-file`, nil))
-		BadPrinter(PrinterFromFlag(`go-template-file=./testdata/missing.tpl`, nil))
-		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template-file=./testdata/ok.tpl`, nil)), nil,
+		BadPrinter(PrinterFromFlag(`go-template-file=./_testdata/missing.tpl`, nil))
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template-file=./_testdata/ok.tpl`, nil)), nil,
 			"ok")
-		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template-file=`, &Specs{GoTemplateArg: "./testdata/ok.tpl"})), nil,
+		PrinterPass(GoodPrinter(PrinterFromFlag(`go-template-file=`, &Specs{GoTemplateArg: "./_testdata/ok.tpl"})), nil,
 			"ok")
 	})
 
